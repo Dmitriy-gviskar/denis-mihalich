@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Gviskar — Денис Михалыч</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="sb"><button id="bs" class="on">🔊</button><button id="bv" class="on">📳</button></div>
+<canvas id="gameCanvas"></canvas>
+<div id="overlay">
+<div id="splash">
+<h1>GVISKAR<br>DEV</h1>
+<div class="si">🥃</div>
+<h2>Денис Михалыч</h2>
+<div class="sub">Лови еду ртом — очки!<br>Избегай лопат и гирь — минус!<br>Каждая 10-я — килька в томате!<br>Свайп / стрелки ← →</div>
+<button class="btn bp" id="btnPlay">▶ ИГРАТЬ</button>
+<button class="btn sm dk" id="btnLB" style="margin-top:8px">🏆 РЕКОРДЫ</button>
+<button class="btn sm dk" id="btnAch" style="margin-top:4px">⭐ ДОСТИЖЕНИЯ</button>
+<button class="btn sm dk" id="btnShop" style="margin-top:4px">🛒 МАГАЗИН</button>
+<button class="btn sm dk" id="btnInvite" style="margin-top:4px">🤝 ПОЗВАТЬ ДРУГА</button>
+</div>
+<div id="go">
+<h2 style="margin-bottom:0">Денис Михалыч</h2>
+<div id="goPhrase" style="font-family:'Press Start 2P',monospace;font-size:9px;color:#ffdd44;margin:4px 0 8px"></div>
+<div class="sd" id="fs">0</div>
+<div class="hd">РЕКОРД: <span id="fh">0</span></div>
+<div class="st" id="fcoins" style="color:#ffaa22"></div>
+<div class="rw" style="margin-top:12px">
+<button class="btn br_ sm" id="btnRe">🔄 ЕЩЁ</button>
+<button class="btn bsh sm" id="btnSh">📤 SHARE</button>
+</div>
+<button class="btn sm dk" id="btnLG" style="margin-top:8px;font-size:7px">🏆 РЕКОРДЫ</button>
+<button class="btn sm dk" id="btnShopGO" style="margin-top:4px;font-size:7px">🛒 МАГАЗИН</button>
+</div>
+<div id="lb">
+<h3>🏆 ТОП-10</h3>
+<div id="lbTabs">
+<button class="btn sm dk lbtab on" data-period="week">НЕДЕЛЯ</button>
+<button class="btn sm dk lbtab" data-period="all">ВСЁ ВРЕМЯ</button>
+</div>
+<div id="lbl"></div>
+<button class="btn sm dk" id="btnBk" style="margin-top:12px">← НАЗАД</button>
+</div>
+<div id="achPanel" style="display:none;flex-direction:column;align-items:center;gap:6px;padding:16px;text-align:center;max-height:80vh;overflow-y:auto">
+<h3 style="color:#ffdd44;font-size:clamp(10px,3vw,14px)">⭐ ДОСТИЖЕНИЯ</h3>
+<div id="achList"></div>
+<button class="btn sm dk" id="btnAchBk" style="margin-top:10px">← НАЗАД</button>
+</div>
+<div id="shopPanel" style="display:none;flex-direction:column;align-items:center;gap:6px;padding:16px;text-align:center;max-height:80vh;overflow-y:auto">
+<h3 style="color:#ffaa22;font-size:clamp(10px,3vw,14px)">🛒 МАГАЗИН</h3>
+<div id="shopCoins" style="font-size:12px;color:#ffdd44;margin:4px 0">🪙 0</div>
+<div id="shopList"></div>
+<button class="btn sm dk" id="btnShopBk" style="margin-top:10px">← НАЗАД</button>
+</div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
