@@ -332,6 +332,29 @@ const POWERUP_SPRITES={magnet:sprMagnet,shield:sprShield,slowmo:sprSlow};
 const POWERUP_GLOW={magnet:'#ff44aa',shield:'#44aaff',slowmo:'#ffdd44'};
 const POWERUP_DUR={magnet:6,shield:8,slowmo:5};
 
+// ===== HD-иконки предметов (Nano Banana) =====
+// Грузим PNG поверх базовых пиксель-спрайтов и рендерим в холст ТОЧНО прежнего
+// размера (×ICON_SCALE) — хитбокс ловли завязан на spr.width/height, поэтому при
+// ICON_SCALE=1 баланс не меняется. До загрузки картинки работает фолбэк на старый
+// спрайт. Файлы в assets/items/<key>.png.
+const ICON_SCALE=1;
+(function loadHDIcons(){
+  const all=Object.assign({},ITEM_SPRITES,POWERUP_SPRITES);
+  Object.keys(all).forEach(key=>{
+    const base=all[key],W=Math.round(base.width*ICON_SCALE),H=Math.round(base.height*ICON_SCALE);
+    const img=new Image();
+    img.onload=function(){
+      const c=document.createElement('canvas');c.width=W;c.height=H;
+      const x=c.getContext('2d');x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';
+      const s=Math.min(W/img.width,H/img.height),dw=img.width*s,dh=img.height*s;
+      x.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
+      if(key in ITEM_SPRITES)ITEM_SPRITES[key]=c;
+      if(key in POWERUP_SPRITES)POWERUP_SPRITES[key]=c;
+    };
+    img.src='assets/items/'+key+'.png?v=5';
+  });
+})();
+
 // ===== ACHIEVEMENTS =====
 const ACHIEVEMENTS=[
   // --- Начало ---
