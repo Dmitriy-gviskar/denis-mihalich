@@ -743,166 +743,102 @@ trees.sort((a,b)=>a.h-b.h);
 const GROUND_Y=GH-100;
 const LAKE_Y=GH*0.38;
 
-function drawForestBG(parOff){
-  parOff=parOff||0;
-  // ===== SKY =====
-  const skyG=cx.createLinearGradient(0,0,0,LAKE_Y);
-  skyG.addColorStop(0,'#5DADE2');skyG.addColorStop(.3,'#7CC0E8');
-  skyG.addColorStop(.6,'#A0D4F0');skyG.addColorStop(.85,'#C8E6C9');
-  skyG.addColorStop(1,'#D4EFDF');
-  cx.fillStyle=skyG;cx.fillRect(0,0,GW,LAKE_Y+30);
+// ===== CACHED PIXEL FAR-BACKGROUND (built ONCE — no per-frame matrix/raster work) =====
+// Layers are slightly wider than GW so parallax sliding never reveals edges.
+const BG_MARGIN=24;            // px overscan on each side
+const BG_W=GW+BG_MARGIN*2;     // off-screen layer width
 
-  // Wispy clouds (strongest parallax — furthest away)
-  const p3=parOff*0.7; // far parallax
-  cx.fillStyle='rgba(255,255,255,.18)';
-  const ct=Date.now()*.0001;
-  cx.beginPath();cx.ellipse(80+Math.sin(ct)*30+p3,35,40,8,0,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.ellipse(200+Math.cos(ct*.7)*20+p3,55,30,6,.2,0,Math.PI*2);cx.fill();
-  cx.fillStyle='rgba(255,255,255,.1)';
-  cx.beginPath();cx.ellipse(320+Math.sin(ct*1.2)*15+p3,28,25,5,-.1,0,Math.PI*2);cx.fill();
+// quantize a value to a step grid -> chunky stepped silhouettes (pixel feel)
+function qStep(v,step){return Math.round(v/step)*step}
 
-  // Sun (medium parallax)
-  const p2=parOff*0.5;
-  cx.fillStyle='#FFF9C4';cx.shadowColor='#FFD54F';cx.shadowBlur=60;
-  cx.beginPath();cx.arc(280+p2,50,18,0,Math.PI*2);cx.fill();cx.shadowBlur=30;
-  cx.beginPath();cx.arc(280+p2,50,22,0,Math.PI*2);cx.fill();cx.shadowBlur=0;
-  cx.globalAlpha=.08;cx.fillStyle='#FFD54F';
-  cx.beginPath();cx.arc(280+p2,50,80,0,Math.PI*2);cx.fill();cx.globalAlpha=1;
-
-  // ===== DISTANT FOREST (richly detailed, 5 depth layers above lake) =====
-  const p1=parOff*0.35;
-
-  // --- Layer 1: Furthest mountains/forest (very dark, large forms) ---
-  const p1a=parOff*0.5;
-  cx.fillStyle='#2a4a22';
-  cx.beginPath();cx.moveTo(-10+p1a,LAKE_Y-15);
-  for(let i=-10;i<=GW+10;i+=2){
-    const h=35+Math.sin((i-p1a)*.018)*12+Math.sin((i-p1a)*.042)*8+Math.sin((i-p1a)*.007)*18;
-    cx.lineTo(i+p1a,LAKE_Y-15-h);
+// --- Sky: 5 flat horizontal bands (banding = pixel aesthetic) + stepped sun ---
+const bgSky=(function(){
+  const c=document.createElement('canvas');c.width=BG_W;c.height=(LAKE_Y+32)|0;
+  const x=c.getContext('2d');x.imageSmoothingEnabled=false;
+  const H=c.height;
+  // 6 flat bands top->horizon
+  const bands=['#4FA3DE','#5DADE2','#7CC0E8','#A0D4F0','#C8E6C9','#D4EFDF'];
+  for(let b=0;b<bands.length;b++){
+    x.fillStyle=bands[b];
+    x.fillRect(0,Math.floor(H*b/bands.length),BG_W,Math.ceil(H/bands.length)+1);
   }
-  cx.lineTo(GW+10+p1a,LAKE_Y-15);cx.closePath();cx.fill();
-
-  // Individual tall pines on far ridge
-  cx.fillStyle='#264a1e';
-  for(let i=0;i<GW;i+=18+Math.sin(i*.3)*6){
-    const px=i+p1a+Math.sin(i*.7)*4;
-    const ph=20+Math.sin(i*.23)*10+Math.sin(i*.51)*6;
-    const baseH=35+Math.sin((i-p1a)*.018)*12+Math.sin((i-p1a)*.042)*8+Math.sin((i-p1a)*.007)*18;
-    const by=LAKE_Y-15-baseH;
-    // Triangle pine silhouette
-    cx.beginPath();
-    cx.moveTo(px,by-ph);
-    cx.lineTo(px-4-Math.random()*2,by);
-    cx.lineTo(px+4+Math.random()*2,by);
-    cx.closePath();cx.fill();
-  }
-
-  // Mist between layer 1 and 2
-  cx.fillStyle='rgba(160,210,200,.06)';
-  cx.fillRect(0,LAKE_Y-50,GW,12);
-
-  // --- Layer 2: Mid-distant forest (medium green, varied treeline) ---
-  const p1b=parOff*0.42;
-  cx.fillStyle='#346828';
-  cx.beginPath();cx.moveTo(-10+p1b,LAKE_Y-10);
-  for(let i=-10;i<=GW+10;i+=2){
-    const h=25+Math.sin((i-p1b)*.03)*8+Math.sin((i-p1b)*.07)*5+Math.sin((i-p1b)*.15)*3;
-    cx.lineTo(i+p1b,LAKE_Y-10-h);
-  }
-  cx.lineTo(GW+10+p1b,LAKE_Y-10);cx.closePath();cx.fill();
-
-  // Individual spruces on this ridge
-  for(let i=5;i<GW;i+=12+Math.sin(i*.4)*4){
-    const px=i+p1b;
-    const baseH=25+Math.sin((i-p1b)*.03)*8+Math.sin((i-p1b)*.07)*5;
-    const by=LAKE_Y-10-baseH;
-    const ph=12+Math.sin(i*.37)*7;
-    // Spruce: narrow triangle
-    cx.fillStyle=i%24<12?'#2d5e22':'#3a7030';
-    cx.beginPath();
-    cx.moveTo(px,by-ph);
-    cx.lineTo(px-3,by);
-    cx.lineTo(px+3,by);
-    cx.closePath();cx.fill();
-    // Tiny trunk hint
-    cx.fillStyle='#4a3a18';
-    cx.fillRect(px-.5,by,1,3);
-  }
-
-  // Atmospheric haze
-  cx.fillStyle='rgba(180,220,210,.05)';
-  cx.fillRect(0,LAKE_Y-40,GW,8);
-
-  // --- Layer 3: Closer tree wall (brighter greens, more detail) ---
-  const p1c=parOff*0.35;
-  cx.fillStyle='#3f7035';
-  cx.beginPath();cx.moveTo(-10+p1c,LAKE_Y-5);
-  for(let i=-10;i<=GW+10;i+=2){
-    const h=18+Math.sin((i-p1c)*.05)*6+Math.sin((i-p1c)*.12)*4+Math.sin((i-p1c)*.28)*2;
-    cx.lineTo(i+p1c,LAKE_Y-5-h);
-  }
-  cx.lineTo(GW+10+p1c,LAKE_Y-5);cx.closePath();cx.fill();
-
-  // Detailed trees on closest ridge
-  for(let i=2;i<GW;i+=8+Math.sin(i*.5)*3){
-    const px=i+p1c;
-    const baseH=18+Math.sin((i-p1c)*.05)*6+Math.sin((i-p1c)*.12)*4;
-    const by=LAKE_Y-5-baseH;
-    const ph=10+Math.sin(i*.29)*6;
-    const isPine=i%16<10;
-    if(isPine){
-      // Bushy pine crown — overlapping circles
-      cx.fillStyle='#4a7a3a';
-      cx.beginPath();cx.arc(px,by-ph*.6,5,0,Math.PI*2);cx.fill();
-      cx.fillStyle='#3d6e30';
-      cx.beginPath();cx.arc(px-2,by-ph*.4,4,0,Math.PI*2);cx.fill();
-      cx.beginPath();cx.arc(px+2,by-ph*.3,4.5,0,Math.PI*2);cx.fill();
-      // Trunk
-      cx.fillStyle='#5a4020';
-      cx.fillRect(px-.8,by-ph*.2,1.6,ph*.2+4);
-    } else {
-      // Spruce triangle with branch tiers
-      cx.fillStyle='#3a6e2a';
-      for(let tier=0;tier<3;tier++){
-        const ty=by-ph+tier*ph*.3;
-        const tw=2+tier*2;
-        cx.beginPath();
-        cx.moveTo(px,ty);cx.lineTo(px-tw,ty+ph*.35);cx.lineTo(px+tw,ty+ph*.35);
-        cx.closePath();cx.fill();
-      }
-      cx.fillStyle='#4a3a15';
-      cx.fillRect(px-.5,by,1,4);
+  // Stepped sun — concentric chunky rings, no blur glow
+  const sx=280+BG_MARGIN,sy=50;
+  const rings=[[24,'rgba(255,213,79,.10)'],[20,'rgba(255,213,79,.18)'],[16,'#FFE082'],[12,'#FFF59D'],[7,'#FFFDE7']];
+  rings.forEach(([r,col])=>{
+    x.fillStyle=col;
+    for(let yy=-r;yy<=r;yy+=2)for(let xx=-r;xx<=r;xx+=2){
+      if(xx*xx+yy*yy<=r*r)x.fillRect(qStep(sx+xx,2),qStep(sy+yy,2),2,2);
+    }
+  });
+  // Pixel cloud blobs — clusters of 2px squares, no ellipse
+  function cloud(cxp,cyp,w,a){
+    x.fillStyle='rgba(255,255,255,'+a+')';
+    for(let i=0;i<w;i++){
+      const px=cxp+i*2, hgt=(Math.sin(i*1.7)+Math.cos(i*.9))*2+4;
+      const yh=Math.max(2,Math.round(hgt/2)*2);
+      x.fillRect(px,cyp-yh/2,2,yh);
     }
   }
+  cloud(60+BG_MARGIN,34,18,.85);
+  cloud(180+BG_MARGIN,54,14,.7);
+  cloud(300+BG_MARGIN,26,11,.6);
+  return c;
+})();
 
-  // --- Layer 4: Shore bushes and shrubs (just above waterline) ---
-  cx.fillStyle='#4a8238';
-  for(let i=0;i<GW;i+=6+Math.sin(i*.3)*3){
-    const bx=i+p1c*.5;
-    const bh=3+Math.sin(i*.4)*2+Math.random()*.5;
-    cx.beginPath();cx.arc(bx,LAKE_Y-1,bh,Math.PI,0);cx.fill();
+// --- Distant forest: 3 stepped silhouette ridges + shore bushes, built once ---
+const bgForest=(function(){
+  const c=document.createElement('canvas');c.width=BG_W;c.height=(LAKE_Y+8)|0;
+  const x=c.getContext('2d');x.imageSmoothingEnabled=false;
+  const O=BG_MARGIN;
+  // ridge filler: stepped (quantized) treeline silhouette
+  function ridge(baseY,amp,col,step,trees,treeCol){
+    x.fillStyle=col;
+    for(let i=0;i<=BG_W;i+=step){
+      const h=qStep(amp.base+Math.sin((i)*amp.f1)*amp.a1+Math.sin((i)*amp.f2)*amp.a2+Math.sin(i*amp.f3)*amp.a3,2);
+      x.fillRect(i,baseY-h,step,h+8);
+    }
+    if(trees){
+      x.fillStyle=treeCol;
+      for(let i=0;i<BG_W;i+=trees){
+        const base=qStep(amp.base+Math.sin(i*amp.f1)*amp.a1+Math.sin(i*amp.f2)*amp.a2,2);
+        const by=baseY-base, ph=qStep(10+Math.sin(i*.23)*6,2);
+        // stepped triangle pine
+        for(let t=0;t<ph;t+=2){const w=Math.round((t/ph)*5)*2+2;x.fillRect(i-w/2,by-ph+t,w,2);}
+      }
+    }
   }
-  // Occasional bright bush highlights
-  cx.fillStyle='#5a9a44';
-  for(let i=10;i<GW;i+=22+Math.sin(i*.2)*8){
-    cx.beginPath();cx.arc(i+p1c*.3,LAKE_Y-2,2+Math.sin(i*.6),Math.PI,0);cx.fill();
-  }
+  // Layer 1 — furthest, darkest, large forms
+  ridge(LAKE_Y-15,{base:34,f1:.018,a1:12,f2:.042,a2:8,f3:.007,a3:16},'#2a4a22',6,18,'#264a1e');
+  // Layer 2 — mid distance
+  ridge(LAKE_Y-10,{base:24,f1:.03,a1:8,f2:.07,a2:5,f3:.15,a3:3},'#346828',4,14,'#2d5e22');
+  // Layer 3 — closest tree wall
+  ridge(LAKE_Y-5,{base:18,f1:.05,a1:6,f2:.12,a2:4,f3:.28,a3:2},'#3f7035',2,10,'#3a6e2a');
+  // Shore bushes — chunky stepped lumps along waterline
+  x.fillStyle='#4a8238';
+  for(let i=0;i<BG_W;i+=4){const bh=qStep(4+Math.sin(i*.4)*2,2);x.fillRect(i,LAKE_Y-bh,4,bh+4);}
+  x.fillStyle='#5a9a44';
+  for(let i=8;i<BG_W;i+=22){x.fillRect(i,LAKE_Y-4,4,4);}
+  return c;
+})();
 
-  // Sun-lit top edges on closest trees
-  cx.fillStyle='rgba(200,230,100,.06)';
-  cx.beginPath();cx.moveTo(-10+p1c,LAKE_Y-5);
-  for(let i=-10;i<=GW+10;i+=2){
-    const h=18+Math.sin((i-p1c)*.05)*6+Math.sin((i-p1c)*.12)*4+Math.sin((i-p1c)*.28)*2;
-    cx.lineTo(i+p1c,LAKE_Y-5-h);
-  }
-  cx.lineTo(GW+10+p1c,LAKE_Y-5);cx.closePath();cx.fill();
+function drawForestBG(parOff){
+  parOff=parOff||0;
+  // Sky group (clouds/sun) — slower parallax, blit cached pixel layer
+  cx.drawImage(bgSky,Math.round(-BG_MARGIN+parOff*0.5),0);
+  // Distant forest group — blit cached stepped silhouettes
+  cx.drawImage(bgForest,Math.round(-BG_MARGIN+parOff*0.38),0);
+
+  const p1c=parOff*0.35; // kept for downstream reflections/foreground refs
 
   // ===== LAKE =====
   const lakeH=GH*0.15;const lakeTop=LAKE_Y;
-  const lakeG=cx.createLinearGradient(0,lakeTop,0,lakeTop+lakeH);
-  lakeG.addColorStop(0,'#7CB9D8');lakeG.addColorStop(.3,'#5BA4C9');
-  lakeG.addColorStop(.7,'#4A93B8');lakeG.addColorStop(1,'#3D8AAF');
-  cx.fillStyle=lakeG;cx.fillRect(0,lakeTop,GW,lakeH);
+  // Flat lake bands instead of gradient (pixel banding)
+  const lakeBands=['#7CB9D8','#5BA4C9','#4A93B8','#3D8AAF'];
+  for(let b=0;b<lakeBands.length;b++){
+    cx.fillStyle=lakeBands[b];
+    cx.fillRect(0,(lakeTop+lakeH*b/lakeBands.length)|0,GW,Math.ceil(lakeH/lakeBands.length)+1);
+  }
   const t=Date.now()*.001;
 
   // Wave lines (animated horizontal waves)
@@ -1087,11 +1023,13 @@ function drawForestBG(parOff){
 
   // ===== SHORE / GRASS =====
   const shoreY=lakeTop+lakeH;
-  const grassG=cx.createLinearGradient(0,shoreY,0,GROUND_Y);
-  grassG.addColorStop(0,'#6B8E23');grassG.addColorStop(.15,'#7CFC00');
-  grassG.addColorStop(.4,'#5D8A1E');grassG.addColorStop(.7,'#4A7016');
-  grassG.addColorStop(1,'#3D5E12');
-  cx.fillStyle=grassG;cx.fillRect(0,shoreY,GW,GROUND_Y-shoreY);
+  // Flat grass bands instead of gradient (pixel banding)
+  const grassBands=['#7CFC00','#6B8E23','#5D8A1E','#4A7016','#3D5E12'];
+  const grassH=GROUND_Y-shoreY;
+  for(let b=0;b<grassBands.length;b++){
+    cx.fillStyle=grassBands[b];
+    cx.fillRect(0,(shoreY+grassH*b/grassBands.length)|0,GW,Math.ceil(grassH/grassBands.length)+1);
+  }
   // Sandy shore
   cx.fillStyle='#C2B280';cx.fillRect(0,shoreY-2,GW,6);
   cx.fillStyle='#B8A870';cx.fillRect(0,shoreY+2,GW,2);
@@ -1548,241 +1486,195 @@ const origCx=cx;
 // ===========================================================
 const DW=80,DH=140;
 
+// ===== PIXEL DENIS — matrix-built sprites, consistent with food pixel art =====
+// Grid: 40 cols x 70 rows, cell px=2 -> 80x140 (= DW x DH). Center col = 20.
+// Skin palette tiers (light/base/shadow) + outfit. Dark outline added by mkPx.
+const DSK_L='#f8d0a8',DSK_B='#f0b888',DSK_S='#d49868',DSK_D='#c08050';
+const DGW=40,DGH=70,DCX=20; // grid dims + center
+
+function dGrid(){const g=[];for(let y=0;y<DGH;y++){g.push(new Array(DGW).fill(0))}return g}
+function dSet(g,x,y,c){x=x|0;y=y|0;if(x>=0&&x<DGW&&y>=0&&y<DGH)g[y][x]=c}
+// filled ellipse into grid (cell coords)
+function dEll(g,cx0,cy0,rx,ry,c){
+  for(let y=Math.ceil(cy0-ry);y<=cy0+ry;y++)for(let x=Math.ceil(cx0-rx);x<=cx0+rx;x++){
+    const dx=(x-cx0)/rx,dy=(y-cy0)/ry;if(dx*dx+dy*dy<=1)dSet(g,x,y,c);
+  }
+}
+function dRect(g,x0,y0,w,h,c){for(let y=y0;y<y0+h;y++)for(let x=x0;x<x0+w;x++)dSet(g,x,y,c)}
+// vertical 3-tone shade pass over a region already filled (left shadow / right light)
+function dShadeH(g,x0,y0,w,h,lc,rc){
+  for(let y=y0;y<y0+h;y++)for(let x=x0;x<x0+w;x++)if(g[y]&&g[y][x]){
+    if(x<=x0+1)g[y][x]=lc;else if(x>=x0+w-2)g[y][x]=rc;
+  }
+}
+
+// Build Denis grid. state: idle|catch|chew|angry|sleep ; outfit: 'beach'|'work'
+function buildDenisGrid(state,outfit){
+  const g=dGrid();
+  const isWork=outfit==='work';
+
+  // ---- LEGS / FEET ----
+  if(isWork){
+    // dark trousers
+    dRect(g,DCX-9,44,7,22,'#2a3a4a');dRect(g,DCX+2,44,7,22,'#2a3a4a');
+    dShadeH(g,DCX-9,44,7,22,'#1f2c38','#34465a');dShadeH(g,DCX+2,44,7,22,'#1f2c38','#34465a');
+    // shoes
+    dRect(g,DCX-10,66,8,3,'#1a1a1a');dRect(g,DCX+2,66,8,3,'#1a1a1a');
+    dRect(g,DCX-10,66,8,1,'#333');dRect(g,DCX+2,66,8,1,'#333');
+  }else{
+    // bare legs
+    dRect(g,DCX-8,54,6,12,DSK_B);dRect(g,DCX+2,54,6,12,DSK_B);
+    dShadeH(g,DCX-8,54,6,12,DSK_S,DSK_L);dShadeH(g,DCX+2,54,6,12,DSK_S,DSK_L);
+    // sandals
+    dRect(g,DCX-10,66,7,2,'#1a1a1a');dRect(g,DCX+3,66,7,2,'#1a1a1a');
+    dSet(g,DCX-7,65,'#333');dSet(g,DCX+6,65,'#333');
+  }
+
+  // ---- SHORTS / lower body ----
+  if(isWork){
+    dRect(g,DCX-11,43,22,3,'#223344');           // belt
+    dRect(g,DCX-1,43,3,3,'#aa9933');             // buckle
+  }else{
+    // orange shorts with checker pattern
+    for(let y=44;y<56;y++)for(let x=DCX-11;x<DCX+11;x++){
+      const cw=((x-(DCX-11))/3|0),ch=((y-44)/3|0);
+      g[y][x]=((cw+ch)&1)?'#f08030':'#cc5010';
+    }
+    dRect(g,DCX-11,43,22,2,'#222');              // waistband
+    // crotch notch
+    for(let x=DCX-1;x<=DCX;x++)for(let y=54;y<56;y++)g[y][x]=0;
+  }
+
+  // ---- BELLY (big, rounded) ----
+  dEll(g,DCX,36,14,11,DSK_B);
+  if(isWork){
+    // blue shirt over torso+belly
+    dEll(g,DCX,36,14,11,'#3366aa');
+    dRect(g,DCX-13,20,26,18,'#3366aa');
+    dEll(g,DCX,37,12,9,'#2a5a99');               // belly bulge shade
+    dShadeH(g,DCX-14,22,28,22,'#2a558e','#4477bb');
+    for(let b=0;b<4;b++)dSet(g,DCX,24+b*5,'#fff'); // buttons
+  }else{
+    dShadeH(g,DCX-14,26,28,21,DSK_S,DSK_L);
+    dEll(g,DCX+3,31,5,4,DSK_L);                   // belly highlight
+    dSet(g,DCX,38,DSK_D);dSet(g,DCX,39,'#a06840'); // navel
+  }
+
+  // ---- CHEST / SHOULDERS ----
+  if(!isWork){
+    dRect(g,DCX-13,20,26,8,DSK_B);
+    dEll(g,DCX,21,13,5,DSK_B);
+    dShadeH(g,DCX-13,20,26,8,DSK_S,DSK_S);
+    dSet(g,DCX-6,24,DSK_S);dSet(g,DCX+6,24,DSK_S); // nipples hint
+  }
+
+  // ---- ARMS ----
+  const armC=isWork?'#3366aa':DSK_B;
+  dRect(g,DCX-16,21,3,8,armC);dRect(g,DCX+13,21,3,8,armC); // upper arm/sleeve
+  if(isWork){dShadeH(g,DCX-16,21,3,8,'#2a558e','#4477bb');dShadeH(g,DCX+13,21,3,8,'#2a558e','#4477bb');}
+  // forearms (skin)
+  dRect(g,DCX-17,29,3,12,DSK_B);dRect(g,DCX+14,29,3,12,DSK_B);
+  dShadeH(g,DCX-17,29,3,12,DSK_S,DSK_B);dShadeH(g,DCX+14,29,3,12,DSK_B,DSK_S);
+  // hands
+  dEll(g,DCX-15,42,2,2,DSK_S);dEll(g,DCX+16,42,2,2,DSK_S);
+
+  // ---- NECK ----
+  dRect(g,DCX-4,17,8,5,DSK_B);dShadeH(g,DCX-4,17,8,5,DSK_S,DSK_S);
+
+  // ---- HEAD (bald) ----
+  const hcy=10,hrx=9,hry=10;
+  dEll(g,DCX,hcy,hrx,hry,DSK_B);
+  dShadeH(g,DCX-hrx,hcy-hry,hrx*2+1,hry*2+1,DSK_S,DSK_S);
+  dEll(g,DCX,hcy,hrx-1,hry-1,DSK_B);            // refill interior over side-shade
+  dEll(g,DCX+2,hcy-4,4,3,DSK_L);                // bald-top highlight
+  dSet(g,DCX+3,hcy-6,'#fff');
+  // ears
+  dEll(g,DCX-9,hcy+1,2,3,DSK_S);dEll(g,DCX+9,hcy+1,2,3,DSK_S);
+  // stubble — deterministic speckle on jaw/chin
+  for(let sy=hcy+1;sy<hcy+8;sy++)for(let sx=DCX-6;sx<=DCX+6;sx++){
+    const d=Math.hypot(sx-DCX,(sy-(hcy+3))*1.1);
+    if(d<7&&d>2&&((sx*5+sy*9)%3===0)&&g[sy][sx]===DSK_B)g[sy][sx]='#c9a878';
+  }
+
+  // ---- FACE per state ---- (eyes around row hcy-1, mouth row hcy+5)
+  const eL=DCX-4,eR=DCX+4,ey=hcy-1;
+  const WHT='#fff',PUP='#2a1a0a',BRW='#7a5030',LIP='#9a5a3a';
+  function eyesOpen(sq){
+    dEll(g,eL,ey,2,sq?2:2,WHT);dEll(g,eR,ey,2,sq?2:2,WHT);
+    dSet(g,eL,ey,PUP);dSet(g,eL+1,ey,PUP);dSet(g,eR,ey,PUP);dSet(g,eR-1,ey,PUP);
+    dSet(g,eL,ey-1,WHT);dSet(g,eR+1,ey-1,WHT); // catch-light
+  }
+  function brows(up){
+    const by=ey-3;
+    dSet(g,eL-2,by,BRW);dSet(g,eL-1,by-(up?1:0),BRW);dSet(g,eL,by-(up?1:0),BRW);
+    dSet(g,eR,by-(up?1:0),BRW);dSet(g,eR+1,by-(up?1:0),BRW);dSet(g,eR+2,by,BRW);
+  }
+
+  if(isWork){
+    // tired Denis: half-lidded eyes, flat brows, slight frown
+    dEll(g,eL,ey,2,2,WHT);dEll(g,eR,ey,2,2,WHT);
+    dSet(g,eL,ey,PUP);dSet(g,eR,ey,PUP);
+    dRect(g,eL-2,ey-2,4,1,DSK_S);dRect(g,eR-1,ey-2,4,1,DSK_S); // droopy lids
+    dRect(g,eL-2,ey-3,4,1,BRW);dRect(g,eR-1,ey-3,4,1,BRW);     // flat brows
+    dRect(g,DCX-3,hcy+5,7,1,LIP);dSet(g,DCX-3,hcy+6,LIP);dSet(g,DCX+3,hcy+6,LIP); // frown
+    dSet(g,DCX,hcy+2,DSK_S);dSet(g,DCX,hcy+3,DSK_S);           // nose
+  }else if(state==='sleep'){
+    dRect(g,eL-2,ey,4,1,'#5a3a20');dRect(g,eR-2,ey,4,1,'#5a3a20'); // closed eyes
+    dEll(g,DCX,hcy+5,2,1,'#8b5a40');                            // small o mouth
+    dSet(g,DCX,hcy+2,DSK_S);
+  }else if(state==='angry'){
+    eyesOpen();
+    dSet(g,eL,ey,PUP);dSet(g,eR,ey,PUP);
+    // angled brows down-inward
+    dSet(g,eL-2,ey-2,'#5a3010');dSet(g,eL-1,ey-3,'#5a3010');dSet(g,eL,ey-3,'#5a3010');
+    dSet(g,eR,ey-3,'#5a3010');dSet(g,eR+1,ey-3,'#5a3010');dSet(g,eR+2,ey-2,'#5a3010');
+    dSet(g,DCX,hcy+2,DSK_S);
+    // gritted teeth
+    dEll(g,DCX,hcy+5,3,2,'#993322');dRect(g,DCX-3,hcy+4,6,1,'#fff');dRect(g,DCX-3,hcy+6,6,1,'#fff');
+  }else if(state==='chew'){
+    // squinted happy eyes (arcs)
+    dRect(g,eL-2,ey,4,1,'#3a2210');dSet(g,eL-2,ey-1,'#3a2210');dSet(g,eL+1,ey-1,'#3a2210');
+    dRect(g,eR-1,ey,4,1,'#3a2210');dSet(g,eR-2,ey-1,'#3a2210');dSet(g,eR+1,ey-1,'#3a2210');
+    brows(true);
+    dSet(g,DCX,hcy+2,DSK_S);
+    dEll(g,DCX,hcy+5,3,2,'#8b3a2a');                           // chewing mouth
+    dEll(g,DCX-6,hcy+4,2,2,'#e0a070');dEll(g,DCX+6,hcy+4,2,2,'#e0a070'); // cheek bulge
+  }else if(state==='catch'){
+    eyesOpen(true);
+    brows(true);
+    dSet(g,DCX,hcy+2,DSK_S);
+    // wide open mouth
+    dEll(g,DCX,hcy+6,4,3,'#8b1a1a');dEll(g,DCX,hcy+6,2,2,'#5a0a0a');
+    dRect(g,DCX-2,hcy+4,5,1,'#fff');                           // upper teeth
+  }else{ // idle
+    eyesOpen();
+    brows(false);
+    dSet(g,DCX,hcy+2,DSK_S);
+    // smile arc
+    dRect(g,DCX-3,hcy+5,7,1,'#8b4a30');dSet(g,DCX-4,hcy+4,'#8b4a30');dSet(g,DCX+4,hcy+4,'#8b4a30');
+  }
+  return g;
+}
+
 function drawDenis(canvas,state){
   const x=canvas.getContext('2d');
   x.clearRect(0,0,canvas.width,canvas.height);
-  const midX=DW/2;
-  const skinBase='#f0b888',skinShadow='#d49868',skinLight='#f8d0a8';
-
-  x.save();
-
-  // === SANDALS ===
-  x.fillStyle='#1a1a1a';
-  x.beginPath();x.ellipse(midX-12,132,10,4,0,0,Math.PI*2);x.fill();
-  x.beginPath();x.ellipse(midX+12,132,10,4,0,0,Math.PI*2);x.fill();
-  x.strokeStyle='#333';x.lineWidth=2;
-  x.beginPath();x.moveTo(midX-17,130);x.quadraticCurveTo(midX-12,126,midX-7,130);x.stroke();
-  x.beginPath();x.moveTo(midX+7,130);x.quadraticCurveTo(midX+12,126,midX+17,130);x.stroke();
-
-  // === LEGS ===
-  let lg=x.createLinearGradient(midX-16,108,midX-6,108);
-  lg.addColorStop(0,skinShadow);lg.addColorStop(.5,skinBase);lg.addColorStop(1,skinLight);
-  x.fillStyle=lg;x.fillRect(midX-18,108,12,24);
-  lg=x.createLinearGradient(midX+6,108,midX+18,108);
-  lg.addColorStop(0,skinLight);lg.addColorStop(.5,skinBase);lg.addColorStop(1,skinShadow);
-  x.fillStyle=lg;x.fillRect(midX+6,108,12,24);
-
-  // === ORANGE SHORTS ===
-  x.fillStyle='#e06818';
-  x.beginPath();x.moveTo(midX-22,88);x.lineTo(midX+22,88);x.lineTo(midX+20,112);x.lineTo(midX+4,112);x.lineTo(midX,105);x.lineTo(midX-4,112);x.lineTo(midX-20,112);x.closePath();x.fill();
-  x.save();x.clip();
-  x.font='bold 5px sans-serif';
-  const words=['NEW','ERA','MER','OK','GO','TOP'];
-  for(let r=0;r<4;r++)for(let c=0;c<4;c++){
-    x.fillStyle=(r+c)%2===0?'#cc5010':'#f08030';
-    x.fillRect(midX-22+c*11,89+r*6,10,5);
-    x.fillStyle='#1a1a1a';x.fillText(words[(r*4+c)%words.length],midX-21+c*11,94+r*6);
-  }
-  x.restore();
-  x.fillStyle='#222';x.fillRect(midX-22,87,44,4);
-
-  // === BELLY ===
-  let bellyG=x.createRadialGradient(midX+2,68,5,midX,65,28);
-  bellyG.addColorStop(0,skinLight);bellyG.addColorStop(.6,skinBase);bellyG.addColorStop(1,skinShadow);
-  x.fillStyle=bellyG;x.beginPath();x.ellipse(midX,70,26,22,0,0,Math.PI*2);x.fill();
-  x.fillStyle=skinShadow;x.beginPath();x.ellipse(midX-1,74,2,3,0.2,0,Math.PI*2);x.fill();
-  x.fillStyle='#c08050';x.beginPath();x.ellipse(midX-1,74,1,1.5,0.2,0,Math.PI*2);x.fill();
-  x.fillStyle='rgba(255,240,220,.15)';x.beginPath();x.ellipse(midX+6,62,10,8,-0.3,0,Math.PI*2);x.fill();
-
-  // === CHEST ===
-  let chG=x.createLinearGradient(midX-28,42,midX+28,42);
-  chG.addColorStop(0,skinShadow);chG.addColorStop(.3,skinBase);chG.addColorStop(.7,skinBase);chG.addColorStop(1,skinShadow);
-  x.fillStyle=chG;x.beginPath();x.moveTo(midX-28,50);x.quadraticCurveTo(midX-30,42,midX-22,38);x.lineTo(midX+22,38);x.quadraticCurveTo(midX+30,42,midX+28,50);x.lineTo(midX+26,60);x.quadraticCurveTo(midX,55,midX-26,60);x.closePath();x.fill();
-  x.fillStyle=skinShadow;x.beginPath();x.arc(midX-12,48,1.5,0,Math.PI*2);x.fill();x.beginPath();x.arc(midX+12,48,1.5,0,Math.PI*2);x.fill();
-
-  // === ARMS ===
-  x.fillStyle=skinBase;
-  x.beginPath();x.moveTo(midX-28,42);x.quadraticCurveTo(midX-36,45,midX-34,60);x.quadraticCurveTo(midX-33,75,midX-30,82);x.lineTo(midX-26,80);x.quadraticCurveTo(midX-27,65,midX-26,52);x.closePath();x.fill();
-  x.beginPath();x.ellipse(midX-31,84,4,3,0.2,0,Math.PI*2);x.fill();
-  x.beginPath();x.moveTo(midX+28,42);x.quadraticCurveTo(midX+36,45,midX+34,60);x.quadraticCurveTo(midX+33,75,midX+30,82);x.lineTo(midX+26,80);x.quadraticCurveTo(midX+27,65,midX+26,52);x.closePath();x.fill();
-  x.beginPath();x.ellipse(midX+31,84,4,3,-0.2,0,Math.PI*2);x.fill();
-
-  // === NECK ===
-  x.fillStyle=skinBase;x.fillRect(midX-8,28,16,14);
-
-  // === HEAD ===
-  x.save();
-  let headTilt=state==='catch'?-0.12:state==='sleep'?0.05:0;
-  x.translate(midX,22);x.rotate(headTilt);
-
-  // Bald head
-  let hG=x.createRadialGradient(2,-2,3,0,0,20);
-  hG.addColorStop(0,skinLight);hG.addColorStop(.7,skinBase);hG.addColorStop(1,skinShadow);
-  x.fillStyle=hG;x.beginPath();x.ellipse(0,0,18,20,0,0,Math.PI*2);x.fill();
-  x.fillStyle='rgba(255,245,230,.2)';x.beginPath();x.ellipse(4,-10,8,6,-0.3,0,Math.PI*2);x.fill();
-  x.fillStyle='rgba(255,255,255,.1)';x.beginPath();x.ellipse(5,-12,4,3,-0.3,0,Math.PI*2);x.fill();
-
-  // === STUBBLE (щетина) ===
-  const stubbleColor='#9a7a50';
-  x.fillStyle=stubbleColor;x.globalAlpha=.35;
-  // Jawline and chin stubble — scattered dots
-  for(let sy=4;sy<16;sy+=2){
-    for(let sx=-12;sx<12;sx+=2.5){
-      const dist=Math.sqrt(sx*sx+(sy-8)*(sy-8));
-      if(dist<14&&dist>3&&Math.random()>.35){
-        x.fillRect(sx+Math.random()*.5,sy+Math.random()*.5,1,1);
-      }
-    }
-  }
-  x.globalAlpha=1;
-  // Light mustache stubble
-  x.fillStyle=stubbleColor;x.globalAlpha=.4;
-  for(let sx=-8;sx<8;sx+=1.8){
-    if(Math.random()>.3){
-      x.fillRect(sx,4+Math.abs(sx)*.1+Math.random()*.5,1,1);
-    }
-  }
-  x.globalAlpha=1;
-
-  // === FACE ===
-  if(state==='sleep'){
-    x.strokeStyle='#5a3a20';x.lineWidth=1.5;x.lineCap='round';
-    x.beginPath();x.moveTo(-9,-2);x.lineTo(-5,-1);x.stroke();
-    x.beginPath();x.moveTo(5,-2);x.lineTo(9,-1);x.stroke();
-  } else if(state==='angry'){
-    x.fillStyle='#fff';x.beginPath();x.ellipse(-7,-2,4,3.5,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(7,-2,4,3.5,0,0,Math.PI*2);x.fill();
-    x.fillStyle='#2a1a0a';x.beginPath();x.arc(-7,-1,2.2,0,Math.PI*2);x.fill();x.beginPath();x.arc(7,-1,2.2,0,Math.PI*2);x.fill();
-    x.strokeStyle='#5a3010';x.lineWidth=2;x.lineCap='round';
-    x.beginPath();x.moveTo(-11,-5);x.lineTo(-5,-8);x.stroke();
-    x.beginPath();x.moveTo(11,-5);x.lineTo(5,-8);x.stroke();
-    // Gritting teeth
-    x.fillStyle='#993322';x.beginPath();x.ellipse(0,8,5,3,0,0,Math.PI*2);x.fill();
-    x.fillStyle='#fff';x.fillRect(-3,6.5,6,1.5);x.fillRect(-3,8.5,6,1);
-  } else if(state==='chew'){
-    x.strokeStyle='#3a2210';x.lineWidth=1.8;x.lineCap='round';
-    x.beginPath();x.arc(-7,-2,3,Math.PI*.15,Math.PI*.85);x.stroke();
-    x.beginPath();x.arc(7,-2,3,Math.PI*.15,Math.PI*.85);x.stroke();
-    x.fillStyle='rgba(220,150,100,.3)';
-    x.beginPath();x.arc(-12,4,4,0,Math.PI*2);x.fill();
-    x.beginPath();x.arc(12,4,4,0,Math.PI*2);x.fill();
-    const chewOff=Math.sin(Date.now()*.012)*2;
-    x.fillStyle='#8b3a2a';x.beginPath();x.ellipse(0,8+chewOff,4,2+Math.abs(chewOff)*.3,0,0,Math.PI*2);x.fill();
-    x.strokeStyle='#7a5030';x.lineWidth=1.5;
-    x.beginPath();x.moveTo(-10,-7);x.quadraticCurveTo(-7,-9,-4,-7);x.stroke();
-    x.beginPath();x.moveTo(4,-7);x.quadraticCurveTo(7,-9,10,-7);x.stroke();
-  } else if(state==='catch'){
-    x.strokeStyle='#3a2210';x.lineWidth=1.8;x.lineCap='round';
-    x.beginPath();x.arc(-7,-2,3,Math.PI*.1,Math.PI*.9);x.stroke();
-    x.beginPath();x.arc(7,-2,3,Math.PI*.1,Math.PI*.9);x.stroke();
-    x.strokeStyle='#7a5030';x.lineWidth=1.5;
-    x.beginPath();x.moveTo(-10,-7);x.quadraticCurveTo(-7,-10,-4,-7);x.stroke();
-    x.beginPath();x.moveTo(4,-7);x.quadraticCurveTo(7,-10,10,-7);x.stroke();
-    // Wide open mouth
-    x.fillStyle='#8b1a1a';x.beginPath();x.ellipse(0,9,7,5,0,0,Math.PI*2);x.fill();
-    x.fillStyle='#5a0a0a';x.beginPath();x.ellipse(0,10,4,3.5,0,0,Math.PI*2);x.fill();
-    x.fillStyle='#fff';x.fillRect(-3,6,6,1.5);
-  } else {
-    // Normal eyes with friendly look
-    x.fillStyle='#fff';x.beginPath();x.ellipse(-7,-2,4,3,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(7,-2,4,3,0,0,Math.PI*2);x.fill();
-    x.fillStyle='#2a1a0a';x.beginPath();x.arc(-7,-1.5,1.8,0,Math.PI*2);x.fill();x.beginPath();x.arc(7,-1.5,1.8,0,Math.PI*2);x.fill();
-    x.fillStyle='#fff';x.beginPath();x.arc(-6.2,-2.3,.6,0,Math.PI*2);x.fill();x.beginPath();x.arc(7.8,-2.3,.6,0,Math.PI*2);x.fill();
-    // Relaxed eyebrows
-    x.strokeStyle='#7a5030';x.lineWidth=1.5;x.lineCap='round';
-    x.beginPath();x.moveTo(-10,-7);x.lineTo(-4,-8);x.stroke();x.beginPath();x.moveTo(4,-8);x.lineTo(10,-7);x.stroke();
-    // Smile! :)
-    x.strokeStyle='#8b4a30';x.lineWidth=1.5;x.lineCap='round';
-    x.beginPath();x.arc(0,6,6,Math.PI*.15,Math.PI*.85);x.stroke();
-    // Smile dimples
-    x.fillStyle='rgba(180,100,70,.2)';
-    x.beginPath();x.arc(-7,5,2,0,Math.PI*2);x.fill();
-    x.beginPath();x.arc(7,5,2,0,Math.PI*2);x.fill();
-  }
-  // Nose
-  x.fillStyle=skinShadow;x.beginPath();x.moveTo(-2,0);x.quadraticCurveTo(0,4,2,0);x.fill();
-  // Ears
-  x.fillStyle=skinBase;x.beginPath();x.ellipse(-18,0,4,6,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(18,0,4,6,0,0,Math.PI*2);x.fill();
-
-  x.restore(); // head
-  x.restore(); // main save
+  const spr=mkPx(buildDenisGrid(state,'beach'),2); // 80x140
+  // align grid (40x70 px-scaled) so feet sit at bottom like the old anchor
+  x.imageSmoothingEnabled=false;
+  x.drawImage(spr,0,DH-spr.height);
 }
 
-// Pre-render states
+// Pre-render states (built ONCE at load — mkPx never runs in the game loop)
 function mkDenis(state){const c=document.createElement('canvas');c.width=DW;c.height=DH;drawDenis(c,state);return c}
 const denisIdle=mkDenis('idle'),denisCatch=mkDenis('catch'),denisSleep=mkDenis('sleep'),denisAngry=mkDenis('angry'),denisChew=mkDenis('chew');
 
-// Denis in work clothes (blue shirt, dark trousers, shoes) — same body, different outfit
+// Denis in work clothes (blue shirt, dark trousers) — same pixel body, different outfit, built once
 const denisWork=(function(){
-  const c=document.createElement('canvas');c.width=DW;c.height=DH;
-  const x=c.getContext('2d');
-  const midX=DW/2;
-  const skinBase='#f0b888',skinShadow='#d49868',skinLight='#f8d0a8';
-  // Dark shoes
-  x.fillStyle='#2a2a2a';
-  x.beginPath();x.ellipse(midX-12,133,11,5,0,0,Math.PI*2);x.fill();
-  x.beginPath();x.ellipse(midX+12,133,11,5,0,0,Math.PI*2);x.fill();
-  x.fillStyle='#1a1a1a';x.fillRect(midX-17,129,10,5);x.fillRect(midX+7,129,10,5);
-  // Dark trousers
-  x.fillStyle='#2a3a4a';
-  x.beginPath();x.moveTo(midX-22,88);x.lineTo(midX+22,88);x.lineTo(midX+20,130);x.lineTo(midX+4,130);x.lineTo(midX,120);x.lineTo(midX-4,130);x.lineTo(midX-20,130);x.closePath();x.fill();
-  x.fillStyle='#223344';x.fillRect(midX-22,87,44,4); // belt
-  x.fillStyle='#aa9933';x.fillRect(midX-3,87,6,4); // buckle
-  // Blue work shirt over belly
-  x.fillStyle='#3366aa';
-  x.beginPath();x.moveTo(midX-28,42);x.quadraticCurveTo(midX-30,50,midX-26,88);x.lineTo(midX+26,88);x.quadraticCurveTo(midX+30,50,midX+28,42);x.lineTo(midX+22,38);x.lineTo(midX-22,38);x.closePath();x.fill();
-  // Belly bulge under shirt
-  x.fillStyle='#2a5a99';
-  x.beginPath();x.ellipse(midX,72,24,18,0,0,Math.PI*2);x.fill();
-  // Shirt buttons
-  x.fillStyle='#fff';
-  for(let b=0;b<4;b++)x.fillRect(midX-1,45+b*11,2,2);
-  // Collar
-  x.fillStyle='#4477bb';
-  x.beginPath();x.moveTo(midX-10,38);x.lineTo(midX-15,44);x.lineTo(midX-8,42);x.closePath();x.fill();
-  x.beginPath();x.moveTo(midX+10,38);x.lineTo(midX+15,44);x.lineTo(midX+8,42);x.closePath();x.fill();
-  // Sleeves / arms
-  x.fillStyle='#3366aa';
-  x.beginPath();x.moveTo(midX-28,42);x.quadraticCurveTo(midX-36,48,midX-34,62);x.lineTo(midX-28,60);x.closePath();x.fill();
-  x.beginPath();x.moveTo(midX+28,42);x.quadraticCurveTo(midX+36,48,midX+34,62);x.lineTo(midX+28,60);x.closePath();x.fill();
-  // Forearms (skin)
-  x.fillStyle=skinBase;
-  x.beginPath();x.moveTo(midX-34,60);x.quadraticCurveTo(midX-33,75,midX-30,84);x.lineTo(midX-26,82);x.quadraticCurveTo(midX-28,68,midX-28,60);x.closePath();x.fill();
-  x.beginPath();x.ellipse(midX-31,85,4,3,.2,0,Math.PI*2);x.fill();
-  x.beginPath();x.moveTo(midX+34,60);x.quadraticCurveTo(midX+33,75,midX+30,84);x.lineTo(midX+26,82);x.quadraticCurveTo(midX+28,68,midX+28,60);x.closePath();x.fill();
-  x.beginPath();x.ellipse(midX+31,85,4,3,-.2,0,Math.PI*2);x.fill();
-  // Neck
-  x.fillStyle=skinBase;x.fillRect(midX-8,28,16,12);
-  // Head (same as idle Denis)
-  x.save();x.translate(midX,22);
-  let hG=x.createRadialGradient(2,-2,3,0,0,20);
-  hG.addColorStop(0,skinLight);hG.addColorStop(.7,skinBase);hG.addColorStop(1,skinShadow);
-  x.fillStyle=hG;x.beginPath();x.ellipse(0,0,18,20,0,0,Math.PI*2);x.fill();
-  x.fillStyle='rgba(255,245,230,.2)';x.beginPath();x.ellipse(4,-10,8,6,-.3,0,Math.PI*2);x.fill();
-  // Stubble
-  x.fillStyle='#9a7a50';x.globalAlpha=.3;
-  for(let sy=4;sy<16;sy+=2)for(let sx=-12;sx<12;sx+=2.5)if(Math.sin(sx*7+sy*13)>.1)x.fillRect(sx,sy,1,1);
-  x.globalAlpha=1;
-  // Tired eyes
-  x.fillStyle='#fff';x.beginPath();x.ellipse(-7,-2,4,2.5,0,0,Math.PI*2);x.fill();
-  x.beginPath();x.ellipse(7,-2,4,2.5,0,0,Math.PI*2);x.fill();
-  x.fillStyle='#2a1a0a';x.beginPath();x.arc(-7,-1,1.8,0,Math.PI*2);x.fill();x.beginPath();x.arc(7,-1,1.8,0,Math.PI*2);x.fill();
-  // Droopy eyelids
-  x.fillStyle=skinBase;x.fillRect(-11,-5,8,2);x.fillRect(3,-5,8,2);
-  // Bags under eyes
-  x.strokeStyle='rgba(100,70,50,.15)';x.lineWidth=.8;
-  x.beginPath();x.arc(-7,1,3,.1,Math.PI*.5);x.stroke();
-  x.beginPath();x.arc(7,1,3,Math.PI*.5,Math.PI*.9);x.stroke();
-  // Slight frown
-  x.strokeStyle='#8b5a40';x.lineWidth=1.5;x.lineCap='round';
-  x.beginPath();x.arc(0,10,5,Math.PI*1.15,Math.PI*1.85);x.stroke();
-  // Eyebrows (flat, tired)
-  x.strokeStyle='#7a5030';x.lineWidth=1.5;
-  x.beginPath();x.moveTo(-11,-6);x.lineTo(-4,-6);x.stroke();
-  x.beginPath();x.moveTo(4,-6);x.lineTo(11,-6);x.stroke();
-  // Nose & ears
-  x.fillStyle='rgba(180,130,100,.3)';x.beginPath();x.moveTo(-2,0);x.quadraticCurveTo(0,4,2,0);x.fill();
-  x.fillStyle=skinBase;x.beginPath();x.ellipse(-18,0,3,5,0,0,Math.PI*2);x.fill();
-  x.beginPath();x.ellipse(18,0,3,5,0,0,Math.PI*2);x.fill();
-  x.restore();
+  const c=document.createElement('canvas');c.width=DW;c.height=DH;const x=c.getContext('2d');
+  x.imageSmoothingEnabled=false;
+  const spr=mkPx(buildDenisGrid('work','work'),2);
+  x.drawImage(spr,0,DH-spr.height);
   return c;
 })();
 
