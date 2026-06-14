@@ -24,8 +24,8 @@ function haptic(t){if(!vibOn)return;try{TG?.HapticFeedback?.impactOccurred(t||'l
 function tgAlert(m){try{TG?.showAlert(m)}catch(e){alert(m)}}
 function tgUser(){try{const u=TG?.initDataUnsafe?.user;return u?{id:u.id,name:u.first_name||'Аноним'}:null}catch(e){return null}}
 let sndOn=true,vibOn=true;
-document.getElementById('bs').onclick=function(){sndOn=!sndOn;this.classList.toggle('on');this.textContent=sndOn?'🔊':'🔇'};
-document.getElementById('bv').onclick=function(){vibOn=!vibOn;this.classList.toggle('on');this.textContent=vibOn?'📳':'📴'};
+document.getElementById('bs').onclick=function(){sndOn=!sndOn;this.classList.toggle('on');this.innerHTML=iconImg(sndOn?'sndOn':'sndOff',18)};
+document.getElementById('bv').onclick=function(){vibOn=!vibOn;this.classList.toggle('on');this.innerHTML=iconImg(vibOn?'vibOn':'vibOff',18)};
 
 // ===== AUDIO =====
 let actx;
@@ -335,66 +335,83 @@ const POWERUP_DUR={magnet:6,shield:8,slowmo:5};
 // ===== ACHIEVEMENTS =====
 const ACHIEVEMENTS=[
   // --- Начало ---
-  {id:'first_catch',name:'Первый улов',desc:'Поймай первый предмет',icon:'🎣',check:s=>s.totalCaught>=1},
-  {id:'catch50',name:'Полсотни',desc:'Поймай 50 предметов',icon:'🧺',check:s=>s.totalCaught>=50},
-  {id:'catch200',name:'Коллекционер',desc:'Поймай 200 предметов',icon:'📦',check:s=>s.totalCaught>=200},
-  {id:'catch1000',name:'Ненасытный',desc:'Поймай 1000 предметов (всего)',icon:'🏗️',check:s=>s.totalCaught>=1000},
+  {id:'first_catch',name:'Первый улов',desc:'Поймай первый предмет',icon:'',check:s=>s.totalCaught>=1},
+  {id:'catch50',name:'Полсотни',desc:'Поймай 50 предметов',icon:'',check:s=>s.totalCaught>=50},
+  {id:'catch200',name:'Коллекционер',desc:'Поймай 200 предметов',icon:'',check:s=>s.totalCaught>=200},
+  {id:'catch1000',name:'Ненасытный',desc:'Поймай 1000 предметов (всего)',icon:'',check:s=>s.totalCaught>=1000},
   // --- Очки ---
-  {id:'score100',name:'Сотня',desc:'Набери 100 очков',icon:'💯',check:s=>s.bestScore>=100},
-  {id:'score500',name:'Полтыщи',desc:'Набери 500 очков',icon:'🏆',check:s=>s.bestScore>=500},
-  {id:'score1000',name:'Тысячник',desc:'Набери 1000 очков',icon:'👑',check:s=>s.bestScore>=1000},
-  {id:'score2500',name:'Мастер',desc:'Набери 2500 очков',icon:'💎',check:s=>s.bestScore>=2500},
-  {id:'score5000',name:'Легенда',desc:'Набери 5000 очков',icon:'🌟',check:s=>s.bestScore>=5000},
+  {id:'score100',name:'Сотня',desc:'Набери 100 очков',icon:'',check:s=>s.bestScore>=100},
+  {id:'score500',name:'Полтыщи',desc:'Набери 500 очков',icon:'',check:s=>s.bestScore>=500},
+  {id:'score1000',name:'Тысячник',desc:'Набери 1000 очков',icon:'',check:s=>s.bestScore>=1000},
+  {id:'score2500',name:'Мастер',desc:'Набери 2500 очков',icon:'',check:s=>s.bestScore>=2500},
+  {id:'score5000',name:'Легенда',desc:'Набери 5000 очков',icon:'',check:s=>s.bestScore>=5000},
   // --- Комбо ---
-  {id:'combo5',name:'Комбо-мастер',desc:'Набери комбо x5',icon:'⚡',check:s=>s.maxCombo>=5},
-  {id:'combo10',name:'Комбо-легенда',desc:'Набери комбо x10',icon:'🔥',check:s=>s.maxCombo>=10},
-  {id:'combo20',name:'Комбо-бог',desc:'Набери комбо x20',icon:'☄️',check:s=>s.maxCombo>=20},
-  {id:'combo30',name:'Невероятно!',desc:'Набери комбо x30',icon:'💫',check:s=>s.maxCombo>=30},
+  {id:'combo5',name:'Комбо-мастер',desc:'Набери комбо x5',icon:'',check:s=>s.maxCombo>=5},
+  {id:'combo10',name:'Комбо-легенда',desc:'Набери комбо x10',icon:'',check:s=>s.maxCombo>=10},
+  {id:'combo20',name:'Комбо-бог',desc:'Набери комбо x20',icon:'',check:s=>s.maxCombo>=20},
+  {id:'combo30',name:'Невероятно!',desc:'Набери комбо x30',icon:'',check:s=>s.maxCombo>=30},
   // --- Выживание ---
-  {id:'survivor',name:'Выживший',desc:'Продержись 60 секунд',icon:'⏱️',check:s=>s.longestGame>=60},
-  {id:'endurance',name:'Стойкий',desc:'Продержись 120 секунд',icon:'🏋️',check:s=>s.longestGame>=120},
-  {id:'marathon',name:'Марафонец',desc:'Продержись 180 секунд',icon:'🏃',check:s=>s.longestGame>=180},
+  {id:'survivor',name:'Выживший',desc:'Продержись 60 секунд',icon:'',check:s=>s.longestGame>=60},
+  {id:'endurance',name:'Стойкий',desc:'Продержись 120 секунд',icon:'',check:s=>s.longestGame>=120},
+  {id:'marathon',name:'Марафонец',desc:'Продержись 180 секунд',icon:'',check:s=>s.longestGame>=180},
   // --- Чистота ---
-  {id:'no_bad',name:'Чистюля',desc:'Не поймай ни одного плохого',icon:'✨',check:s=>s.cleanGames>=1},
-  {id:'clean5',name:'Перфекционист',desc:'5 чистых игр',icon:'🧼',check:s=>s.cleanGames>=5},
+  {id:'no_bad',name:'Чистюля',desc:'Не поймай ни одного плохого',icon:'',check:s=>s.cleanGames>=1},
+  {id:'clean5',name:'Перфекционист',desc:'5 чистых игр',icon:'',check:s=>s.cleanGames>=5},
   // --- Еда ---
-  {id:'all_food',name:'Гурман',desc:'Поймай каждый вид еды',icon:'🍽️',check:s=>GOOD_ITEMS.every(i=>s.caughtTypes[i])},
-  {id:'kilka_fan',name:'Килька-фан',desc:'Поймай 10 банок кильки',icon:'🐟',check:s=>s.kilkaCaught>=10},
-  {id:'kilka50',name:'Килька-маньяк',desc:'Поймай 50 банок кильки',icon:'🐟',check:s=>s.kilkaCaught>=50},
-  {id:'vodka_lover',name:'Водочка',desc:'Поймай 30 рюмок',icon:'🥃',check:s=>(s.shotsCaught||0)>=30},
-  {id:'shash_master',name:'Шашлычник',desc:'Поймай 20 шашлыков',icon:'🍖',check:s=>(s.shashCaught||0)>=20},
+  {id:'all_food',name:'Гурман',desc:'Поймай каждый вид еды',icon:'',check:s=>GOOD_ITEMS.every(i=>s.caughtTypes[i])},
+  {id:'kilka_fan',name:'Килька-фан',desc:'Поймай 10 банок кильки',icon:'',check:s=>s.kilkaCaught>=10},
+  {id:'kilka50',name:'Килька-маньяк',desc:'Поймай 50 банок кильки',icon:'',check:s=>s.kilkaCaught>=50},
+  {id:'vodka_lover',name:'Водочка',desc:'Поймай 30 рюмок',icon:'',check:s=>(s.shotsCaught||0)>=30},
+  {id:'shash_master',name:'Шашлычник',desc:'Поймай 20 шашлыков',icon:'',check:s=>(s.shashCaught||0)>=20},
   // --- Бонусы ---
-  {id:'magnet_use',name:'Магнитный',desc:'Используй магнит',icon:'🧲',check:s=>s.powersUsed>=1},
-  {id:'shield_use',name:'Защитник',desc:'Используй щит',icon:'🛡️',check:s=>s.shieldsUsed>=1},
-  {id:'power10',name:'Бонусоман',desc:'Собери 10 бонусов',icon:'⭐',check:s=>(s.powersUsed||0)+(s.shieldsUsed||0)+(s.slowsUsed||0)>=10},
+  {id:'magnet_use',name:'Магнитный',desc:'Используй магнит',icon:'',check:s=>s.powersUsed>=1},
+  {id:'shield_use',name:'Защитник',desc:'Используй щит',icon:'',check:s=>s.shieldsUsed>=1},
+  {id:'power10',name:'Бонусоман',desc:'Собери 10 бонусов',icon:'',check:s=>(s.powersUsed||0)+(s.shieldsUsed||0)+(s.slowsUsed||0)>=10},
   // --- Уровни ---
-  {id:'lvl3',name:'Уровень 3',desc:'Доберись до 3 уровня',icon:'📈',check:s=>(s.maxLevel||0)>=3},
-  {id:'lvl5',name:'Уровень 5',desc:'Доберись до 5 уровня',icon:'🚀',check:s=>(s.maxLevel||0)>=5},
-  {id:'lvl10',name:'Десятка',desc:'Доберись до 10 уровня',icon:'🎯',check:s=>(s.maxLevel||0)>=10},
+  {id:'lvl3',name:'Уровень 3',desc:'Доберись до 3 уровня',icon:'',check:s=>(s.maxLevel||0)>=3},
+  {id:'lvl5',name:'Уровень 5',desc:'Доберись до 5 уровня',icon:'',check:s=>(s.maxLevel||0)>=5},
+  {id:'lvl10',name:'Десятка',desc:'Доберись до 10 уровня',icon:'',check:s=>(s.maxLevel||0)>=10},
   // --- Босс ---
-  {id:'boss_kill',name:'Победитель',desc:'Победи первого босса',icon:'💀',check:s=>(s.bossKills||0)>=1},
+  {id:'boss_kill',name:'Победитель',desc:'Победи первого босса',icon:'',check:s=>(s.bossKills||0)>=1},
   // --- Монеты ---
-  {id:'rich',name:'Богач',desc:'Накопи 500 монет',icon:'🪙',check:s=>(s.totalCoinsEarned||0)>=500},
-  {id:'shop1',name:'Шопоголик',desc:'Купи первый апгрейд',icon:'🛒',check:s=>(s.upgradesBought||0)>=1},
+  {id:'rich',name:'Богач',desc:'Накопи 500 монет',icon:'',check:s=>(s.totalCoinsEarned||0)>=500},
+  {id:'shop1',name:'Шопоголик',desc:'Купи первый апгрейд',icon:'',check:s=>(s.upgradesBought||0)>=1},
   // --- Мета ---
-  {id:'games10',name:'Завсегдатай',desc:'Сыграй 10 игр',icon:'🎮',check:s=>(s.gamesPlayed||0)>=10},
-  {id:'games50',name:'Ветеран',desc:'Сыграй 50 игр',icon:'🎖️',check:s=>(s.gamesPlayed||0)>=50},
-  {id:'games100',name:'Старожил',desc:'Сыграй 100 игр',icon:'🏅',check:s=>(s.gamesPlayed||0)>=100},
+  {id:'games10',name:'Завсегдатай',desc:'Сыграй 10 игр',icon:'',check:s=>(s.gamesPlayed||0)>=10},
+  {id:'games50',name:'Ветеран',desc:'Сыграй 50 игр',icon:'',check:s=>(s.gamesPlayed||0)>=50},
+  {id:'games100',name:'Старожил',desc:'Сыграй 100 игр',icon:'',check:s=>(s.gamesPlayed||0)>=100},
   // --- Длинный хвост ---
-  {id:'catch5000',name:'Не остановить',desc:'Поймай 5000 предметов (всего)',icon:'🏭',check:s=>s.totalCaught>=5000},
-  {id:'score10000',name:'Полубог',desc:'Набери 10000 очков',icon:'⚜️',check:s=>s.bestScore>=10000},
-  {id:'combo50',name:'Запределье',desc:'Набери комбо x50',icon:'🌌',check:s=>s.maxCombo>=50},
-  {id:'lvl15',name:'Пятнашка',desc:'Доберись до 15 уровня',icon:'🛰️',check:s=>(s.maxLevel||0)>=15},
-  {id:'lvl20',name:'Космос',desc:'Доберись до 20 уровня',icon:'🪐',check:s=>(s.maxLevel||0)>=20},
-  {id:'boss5',name:'Боссолом',desc:'Победи 5 боссов',icon:'☠️',check:s=>(s.bossKills||0)>=5},
-  {id:'boss15',name:'Гроза боссов',desc:'Победи 15 боссов',icon:'👹',check:s=>(s.bossKills||0)>=15},
-  {id:'kilka100',name:'Килька-король',desc:'Поймай 100 банок кильки',icon:'🐠',check:s=>(s.kilkaCaught||0)>=100},
-  {id:'vodka100',name:'В дрова',desc:'Поймай 100 рюмок',icon:'🍶',check:s=>(s.shotsCaught||0)>=100},
-  {id:'marathon300',name:'Железный',desc:'Продержись 300 секунд',icon:'⛓️',check:s=>s.longestGame>=300},
-  {id:'clean10',name:'Кристальный',desc:'10 чистых игр',icon:'💠',check:s=>s.cleanGames>=10},
-  {id:'rich2000',name:'Олигарх',desc:'Накопи 2000 монет',icon:'💰',check:s=>(s.totalCoinsEarned||0)>=2000},
-  {id:'power50',name:'Бонус-магнат',desc:'Собери 50 бонусов',icon:'🎁',check:s=>(s.powersUsed||0)+(s.shieldsUsed||0)+(s.slowsUsed||0)>=50},
+  {id:'catch5000',name:'Не остановить',desc:'Поймай 5000 предметов (всего)',icon:'',check:s=>s.totalCaught>=5000},
+  {id:'score10000',name:'Полубог',desc:'Набери 10000 очков',icon:'',check:s=>s.bestScore>=10000},
+  {id:'combo50',name:'Запределье',desc:'Набери комбо x50',icon:'',check:s=>s.maxCombo>=50},
+  {id:'lvl15',name:'Пятнашка',desc:'Доберись до 15 уровня',icon:'',check:s=>(s.maxLevel||0)>=15},
+  {id:'lvl20',name:'Космос',desc:'Доберись до 20 уровня',icon:'',check:s=>(s.maxLevel||0)>=20},
+  {id:'boss5',name:'Боссолом',desc:'Победи 5 боссов',icon:'',check:s=>(s.bossKills||0)>=5},
+  {id:'boss15',name:'Гроза боссов',desc:'Победи 15 боссов',icon:'',check:s=>(s.bossKills||0)>=15},
+  {id:'kilka100',name:'Килька-король',desc:'Поймай 100 банок кильки',icon:'',check:s=>(s.kilkaCaught||0)>=100},
+  {id:'vodka100',name:'В дрова',desc:'Поймай 100 рюмок',icon:'',check:s=>(s.shotsCaught||0)>=100},
+  {id:'marathon300',name:'Железный',desc:'Продержись 300 секунд',icon:'',check:s=>s.longestGame>=300},
+  {id:'clean10',name:'Кристальный',desc:'10 чистых игр',icon:'',check:s=>s.cleanGames>=10},
+  {id:'rich2000',name:'Олигарх',desc:'Накопи 2000 монет',icon:'',check:s=>(s.totalCoinsEarned||0)>=2000},
+  {id:'power50',name:'Бонус-магнат',desc:'Собери 50 бонусов',icon:'',check:s=>(s.powersUsed||0)+(s.shieldsUsed||0)+(s.slowsUsed||0)>=50},
 ];
+
+// Маппинг достижений на компактный пиксель-набор (консистентность важнее разнообразия)
+const ACH_ICON={
+  first_catch:'fish',catch50:'fish',catch200:'fish',catch1000:'fish',catch5000:'fish',
+  score100:'star',score500:'trophy',score1000:'trophy',score2500:'star',score5000:'star',score10000:'trophy',
+  combo5:'bolt',combo10:'fire',combo20:'bolt',combo30:'fire',combo50:'bolt',
+  survivor:'shield',endurance:'shield',marathon:'shield',marathon300:'shield',
+  no_bad:'star',clean5:'star',clean10:'star',
+  all_food:'fish',kilka_fan:'fish',kilka50:'fish',kilka100:'fish',
+  vodka_lover:'shotMini',vodka100:'shotMini',shash_master:'fish',
+  magnet_use:'bolt',shield_use:'shield',power10:'star',power50:'star',
+  lvl3:'target',lvl5:'target',lvl10:'target',lvl15:'target',lvl20:'target',
+  boss_kill:'trophy',boss5:'trophy',boss15:'trophy',
+  rich:'coin',rich2000:'coin',shop1:'cart',
+  games10:'target',games50:'trophy',games100:'trophy',
+};
+function achIconName(a){return ACH_ICON[a.id]||a.icon||'star'}
 
 // Load/save achievements
 function loadAchStats(){try{return JSON.parse(localStorage.getItem('gv_ach')||'{}')}catch(e){return{}}}
@@ -423,7 +440,7 @@ function checkAchievements(){
 function showAchPopup(a){
   const el=document.createElement('div');
   el.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);font-family:"Press Start 2P",monospace;font-size:8px;color:#ffdd44;background:rgba(0,0,0,.85);border:2px solid #ffdd44;padding:10px 16px;z-index:25;text-align:center;animation:achIn 3s ease forwards;pointer-events:none;white-space:nowrap';
-  el.innerHTML=`${a.icon} ${a.name}!<br><span style="font-size:6px;color:#aaa">${a.desc}</span>`;
+  el.innerHTML=`${iconImg(achIconName(a),14)} ${a.name}!<br><span style="font-size:6px;color:#aaa">${a.desc}</span>`;
   const style=document.createElement('style');
   style.textContent='@keyframes achIn{0%{opacity:0;bottom:60px}15%{opacity:1;bottom:80px}85%{opacity:1;bottom:80px}100%{opacity:0;bottom:100px}}';
   document.head.appendChild(style);
@@ -436,6 +453,238 @@ let sessionBadCaught=0,sessionTime=0;
 // Heart
 const sprHeart=mkPx([[_,'#ff4466','#ff4466',_,_,'#ff4466','#ff4466',_],['#ff4466','#ff8899','#ff4466','#ff4466','#ff4466','#ff4466','#ff2244','#ff4466'],['#ff4466','#ff4466','#ff4466','#ff4466','#ff4466','#ff4466','#ff4466','#ff4466'],[_,'#ff4466','#ff4466','#ff4466','#ff4466','#ff4466','#ff4466',_],[_,_,'#ff2244','#ff4466','#ff4466','#ff2244',_,_],[_,_,_,'#cc2244','#cc2244',_,_,_]],2);
 const sprHeartD=mkPx([[_,'#665','#665',_,_,'#665','#665',_],['#665','#776','#665','#665','#665','#665','#554','#665'],['#665','#665','#665','#665','#665','#665','#665','#665'],[_,'#665','#665','#665','#665','#665','#665',_],[_,_,'#554','#665','#665','#554',_,_],[_,_,_,'#443','#443',_,_,_]],2);
+
+// ===== UI PIXEL ICON SET =====
+// Компактный переиспользуемый набор пиксель-иконок для HUD/DOM (вместо эмодзи).
+// Палитра в стиле еды. px подобран под мелкий UI.
+const G_Y='#ffdd44',G_YD='#ddaa22',G_YL='#fff0a0'; // золото
+const ICONP={
+  // монета
+  coin:[
+    [_,_,G_YD,G_Y,G_Y,G_YD,_,_],
+    [_,G_YD,G_Y,G_YL,G_Y,G_Y,G_YD,_],
+    [G_YD,G_Y,G_YL,G_Y,G_Y,G_Y,G_Y,G_YD],
+    [G_YD,G_Y,G_Y,G_YD,G_YD,G_Y,G_Y,G_YD],
+    [G_YD,G_Y,G_Y,G_YD,G_YD,G_Y,G_Y,G_YD],
+    [G_YD,G_Y,G_Y,G_Y,G_YL,G_Y,G_Y,G_YD],
+    [_,G_YD,G_Y,G_Y,G_Y,G_Y,G_YD,_],
+    [_,_,G_YD,G_Y,G_Y,G_YD,_,_],
+  ],
+  // трофей / кубок
+  trophy:[
+    ['#ddaa22','#ffdd44','#ffdd44','#ffdd44','#ffdd44','#ddaa22'],
+    ['#ddaa22','#ffe97a','#ffdd44','#ffdd44','#ffe97a','#ddaa22'],
+    [_,'#ddaa22','#ffdd44','#ffdd44','#ddaa22',_],
+    [_,_,'#ddaa22','#ddaa22',_,_],
+    [_,'#cc9900','#ddaa22','#ddaa22','#cc9900',_],
+    [_,'#cc9900','#cc9900','#cc9900','#cc9900',_],
+  ],
+  // звезда
+  star:[
+    [_,_,_,G_Y,_,_,_],
+    [_,_,G_Y,G_YL,G_Y,_,_],
+    [G_Y,G_Y,G_YL,G_YL,G_YL,G_Y,G_Y],
+    [_,G_Y,G_YL,G_Y,G_YL,G_Y,_],
+    [_,G_Y,G_Y,_,G_Y,G_Y,_],
+    [G_Y,_,_,_,_,_,G_Y],
+  ],
+  // мишень / достижения цель
+  target:[
+    [_,'#cc3333','#cc3333','#cc3333','#cc3333',_],
+    ['#cc3333','#eee','#cc3333','#cc3333','#eee','#cc3333'],
+    ['#cc3333','#cc3333','#ffdd44','#ffdd44','#cc3333','#cc3333'],
+    ['#cc3333','#cc3333','#ffdd44','#ffdd44','#cc3333','#cc3333'],
+    ['#cc3333','#eee','#cc3333','#cc3333','#eee','#cc3333'],
+    [_,'#cc3333','#cc3333','#cc3333','#cc3333',_],
+  ],
+  // корзина / магазин
+  cart:[
+    ['#ffdd44',_,_,_,_,_,_],
+    ['#ffdd44','#ffdd44','#ffdd44','#ffdd44','#ffdd44','#ffdd44',_],
+    [_,'#ddaa22','#ffdd44','#ffdd44','#ffdd44','#ddaa22',_],
+    [_,'#ddaa22','#ffdd44','#ffdd44','#ffdd44','#ddaa22',_],
+    [_,_,'#ddaa22','#ddaa22','#ddaa22',_,_],
+    [_,'#ffdd44',_,_,_,'#ffdd44',_],
+  ],
+  // рыба (килька)
+  fish:[
+    [_,_,'#88bbdd','#88bbdd','#88bbdd',_,'#6699bb'],
+    [_,'#aaccee','#cce4f4','#aaccee','#88bbdd','#6699bb','#6699bb'],
+    ['#88bbdd','#cce4f4','#88bbdd','#333','#88bbdd','#88bbdd','#6699bb'],
+    [_,'#aaccee','#cce4f4','#aaccee','#88bbdd','#6699bb','#6699bb'],
+    [_,_,'#88bbdd','#88bbdd','#88bbdd',_,'#6699bb'],
+  ],
+  // молния (комбо)
+  bolt:[
+    [_,_,_,_,'#ffdd44','#ffdd44'],
+    [_,_,_,'#ffdd44','#ffe97a',_],
+    [_,_,'#ffdd44','#ffe97a',_,_],
+    ['#ffdd44','#ffdd44','#ffe97a','#ffdd44','#ffdd44',_],
+    [_,_,'#ffe97a','#ffdd44',_,_],
+    [_,'#ffdd44','#ffdd44',_,_,_],
+  ],
+  // огонь (стрик/комбо)
+  fire:[
+    [_,_,'#ffaa22',_,_],
+    [_,'#ffaa22','#ffdd44','#ffaa22',_],
+    ['#ff6622','#ffaa22','#ffe97a','#ffaa22','#ff6622'],
+    ['#ff6622','#ffdd44','#fff0a0','#ffdd44','#ff6622'],
+    [_,'#ff6622','#ffaa22','#ff6622',_],
+  ],
+  // щит
+  shield:[
+    [_,'#3388dd','#55aaff','#55aaff','#3388dd',_],
+    ['#3388dd','#55aaff','#ffdd44','#55aaff','#55aaff','#3388dd'],
+    ['#3388dd','#55aaff','#ffdd44','#ffdd44','#55aaff','#3388dd'],
+    [_,'#3388dd','#55aaff','#55aaff','#3388dd',_],
+    [_,_,'#3388dd','#3388dd',_,_],
+  ],
+  // замок (locked)
+  lock:[
+    [_,'#998','#998','#998',_],
+    ['#998',_,_,_,'#998'],
+    ['#ccb','#bba','#bba','#bba','#ccb'],
+    ['#ccb','#bba','#776','#bba','#ccb'],
+    ['#ccb','#bba','#776','#bba','#ccb'],
+    ['#ccb','#bba','#bba','#bba','#ccb'],
+  ],
+  // медали 1/2/3
+  med1:[
+    [_,'#ddaa22',_,'#ddaa22',_],
+    [_,'#cc9900',_,'#cc9900',_],
+    [_,'#ffdd44','#ffe97a','#ffdd44',_],
+    ['#ffdd44','#ffe97a','#fff0a0','#ffe97a','#ffdd44'],
+    [_,'#ddaa22','#ffdd44','#ddaa22',_],
+  ],
+  med2:[
+    [_,'#aab',_,'#aab',_],
+    [_,'#889',_,'#889',_],
+    [_,'#ccd','#dde','#ccd',_],
+    ['#ccd','#dde','#eef','#dde','#ccd'],
+    [_,'#aab','#ccd','#aab',_],
+  ],
+  med3:[
+    [_,'#b86',_,'#b86',_],
+    [_,'#964',_,'#964',_],
+    [_,'#d97','#eab','#d97',_],
+    ['#d97','#eab','#fcb','#eab','#d97'],
+    [_,'#b86','#d97','#b86',_],
+  ],
+  // ветер
+  wind:[
+    [_,'#cde','#cde','#cde','#cde',_,_],
+    ['#cde',_,_,_,_,'#cde',_],
+    [_,'#cde','#cde','#cde','#cde','#cde','#cde'],
+    ['#cde',_,_,_,_,'#cde',_],
+    [_,'#cde','#cde','#cde',_,_,_],
+  ],
+  // сон Z
+  zzz:[
+    ['#cde','#cde','#cde','#cde',_],
+    [_,_,_,'#cde',_],
+    [_,_,'#cde',_,_],
+    [_,'#cde',_,_,_],
+    ['#cde','#cde','#cde','#cde',_],
+  ],
+  // рукопожатие / друг (упрощённо: две ладони)
+  friend:[
+    [_,'#e8b890',_,_,'#e8b890',_],
+    ['#e8b890','#f0c8a0','#d8a878','#d8a878','#f0c8a0','#e8b890'],
+    ['#d8a878','#e8b890','#c89868','#c89868','#e8b890','#d8a878'],
+    [_,'#d8a878','#c89868','#c89868','#d8a878',_],
+    [_,_,'#b88858','#b88858',_,_],
+  ],
+  // повтор / replay
+  replay:[
+    [_,'#ff8888','#ff6b6b','#ff6b6b','#ff8888',_],
+    ['#ff6b6b',_,_,_,_,'#ff6b6b'],
+    ['#ff6b6b',_,_,_,'#ff6b6b','#ff6b6b'],
+    [_,_,_,_,'#ff6b6b','#ff8888'],
+    [_,_,_,'#ff6b6b','#ff6b6b','#ff6b6b'],
+  ],
+  // share / отправить (стрелка вверх из коробки)
+  share:[
+    [_,_,'#cfe9d2',_,_],
+    [_,'#a8d8ae','#eafff0','#a8d8ae',_],
+    ['#88c890','#a8d8ae','#eafff0','#a8d8ae','#88c890'],
+    [_,_,'#88c890',_,_],
+    [_,_,'#88c890',_,_],
+  ],
+  // звук вкл (динамик с волной)
+  sndOn:[
+    [_,_,'#ffdd44',_,_,'#ffdd44'],
+    [_,'#ffdd44','#ffdd44',_,'#ffdd44',_],
+    ['#ffdd44','#ffdd44','#ffdd44','#ffdd44',_,'#ffdd44'],
+    [_,'#ffdd44','#ffdd44',_,'#ffdd44',_],
+    [_,_,'#ffdd44',_,_,'#ffdd44'],
+  ],
+  // звук выкл (динамик с X)
+  sndOff:[
+    [_,_,'#999',_,'#c44',_,'#c44'],
+    [_,'#999','#999',_,_,'#c44',_],
+    ['#999','#999','#999','#999',_,'#c44',_],
+    [_,'#999','#999',_,_,'#c44',_],
+    [_,_,'#999',_,'#c44',_,'#c44'],
+  ],
+  // вибро вкл (телефон с дрожью)
+  vibOn:[
+    ['#c44',_,'#ffdd44','#ffdd44','#ffdd44',_,'#c44'],
+    [_,'#c44','#ffdd44','#333','#ffdd44','#c44',_],
+    [_,_,'#ffdd44','#ffdd44','#ffdd44',_,_],
+    [_,'#c44','#ffdd44','#888','#ffdd44','#c44',_],
+    ['#c44',_,'#ffdd44','#ffdd44','#ffdd44',_,'#c44'],
+  ],
+  // вибро выкл
+  vibOff:[
+    [_,_,'#999','#999','#999',_,_],
+    [_,_,'#999','#333','#999',_,_],
+    [_,_,'#999','#999','#999',_,_],
+    [_,_,'#999','#888','#999',_,_],
+    [_,_,'#999','#999','#999',_,_],
+  ],
+  // рюмка (мини-лого)
+  shotMini:[
+    ['#cfe0ee','#dcecf8','#e8f4ff','#dcecf8','#cfe0ee'],
+    ['#b8cce0','#cfe0ee','#dcecf8','#cfe0ee','#b8cce0'],
+    [_,'#a8bcd0','#b8cce0','#a8bcd0',_],
+    [_,'#9aacc0','#a8bcd0','#9aacc0',_],
+    [_,'#8a9cb0','#9aacc0','#8a9cb0',_],
+    ['#8a9cb0','#9aacc0','#aabccd','#9aacc0','#8a9cb0'],
+  ],
+};
+const _iconCache={};
+// canvas-спрайт иконки (для drawImage на HUD)
+function iconSpr(name,px){const k=name+'@'+(px||2);if(_iconCache[k])return _iconCache[k];return _iconCache[k]=mkPx(ICONP[name],px||2)}
+// dataURL для <img> в DOM
+const _iconUrl={};
+function iconUrl(name,px){const k=name+'@'+(px||3);if(_iconUrl[k])return _iconUrl[k];return _iconUrl[k]=iconSpr(name,px).toDataURL()}
+// готовый <img>-тег
+function iconImg(name,h,px){const u=iconUrl(name,px||3);return `<img class="pxi" src="${u}" style="height:${h||14}px" alt="">`}
+
+// HUD-спрайты (px=2, мелкие)
+const hudCoin=iconSpr('coin',2),hudWind=iconSpr('wind',2),hudZzz=iconSpr('zzz',2);
+// инициализация иконок тумблеров звук/вибро
+document.getElementById('bs').innerHTML=iconImg(sndOn?'sndOn':'sndOff',18);
+document.getElementById('bv').innerHTML=iconImg(vibOn?'vibOn':'vibOff',18);
+// инициализация splash-UI: лого-рюмка, иконки меню, заголовки секций
+function initUI(){
+  const set=(sel,html)=>{const e=document.querySelector(sel);if(e)e.innerHTML=html};
+  set('#splashLogo',iconImg('shotMini',56,8));
+  set('#btnLB .ic',iconImg('trophy',26,4));
+  set('#btnShop .ic',iconImg('cart',26,4));
+  set('#btnAch .ic',iconImg('target',26,4));
+  // заголовки секций с пиксель-иконкой слева
+  set('#lbHead',iconImg('trophy',16,3)+' ТОП-10');
+  set('#achHead',iconImg('target',16,3)+' ДОСТИЖЕНИЯ');
+  set('#shopHead',iconImg('cart',16,3)+' МАГАЗИН');
+  // онбординг правил — только при первом запуске
+  if(!localStorage.getItem('gv_onboarded')){
+    const ob=document.getElementById('onboard');if(ob)ob.style.display='block';
+  }
+}
+initUI();
+// при первом старте игры гасим онбординг и ставим флаг
+function markOnboarded(){if(!localStorage.getItem('gv_onboarded')){localStorage.setItem('gv_onboarded','1');const ob=document.getElementById('onboard');if(ob)ob.style.display='none'}}
 
 // ===== PARTICLES =====
 const parts=[];
@@ -1551,11 +1800,13 @@ function drawHUD(){
   cx.fillText('LVL '+G.level+' '+theme.name,12,49);
   cx.shadowBlur=0;
   // Coins
+  cx.drawImage(hudCoin,10,52,10,10);
   cx.textAlign='left';cx.font='7px "Press Start 2P"';cx.fillStyle='#ffaa22';
-  cx.fillText('🪙'+G.sessionCoins,12,60);
+  cx.fillText(''+G.sessionCoins,24,60);
 
   if(G.combo>=3){cx.textAlign='center';cx.font='8px "Press Start 2P"';const a=.6+.4*Math.sin(Date.now()*.008);cx.globalAlpha=a;cx.fillStyle='#ffdd44';cx.shadowColor='#000';cx.shadowBlur=4;cx.fillText('x2 COMBO '+G.combo+'!',GW/2,20);cx.shadowBlur=0;cx.globalAlpha=1}
-  cx.textAlign='right';cx.font='7px "Press Start 2P"';cx.fillStyle='rgba(255,255,255,.6)';cx.fillText('BEST:'+G.highscore,GW-12,20);
+  // BEST показываем только когда в текущей игре побит рекорд
+  if(G.score>=G.highscore&&G.score>0){cx.textAlign='right';cx.font='7px "Press Start 2P"';cx.fillStyle='#ffdd44';cx.shadowColor='#000';cx.shadowBlur=3;cx.fillText('РЕКОРД!',GW-12,20);cx.shadowBlur=0}
   // Hearts
   const maxHearts=Math.ceil(G.lives);const heartCount=Math.max(3,Math.ceil((3+getUpLvl('extraLife')*.5)));
   for(let i=0;i<heartCount;i++){
@@ -1573,9 +1824,11 @@ function drawHUD(){
   if(Math.abs(G.wind)>5){
     cx.textAlign='center';cx.font='8px "Press Start 2P"';
     cx.fillStyle='rgba(255,255,255,.5)';
-    const windArrow=G.wind>0?'→→→':'←←←';
-    const windStr=Math.abs(G.wind)>40?'💨💨':'💨';
-    cx.fillText(windStr+' '+windArrow,GW/2,GH-20);
+    const windArrow=G.wind>0?'>>>':'<<<';
+    const strong=Math.abs(G.wind)>40;
+    cx.drawImage(hudWind,GW/2-(strong?28:18),GH-30,12,9);
+    if(strong)cx.drawImage(hudWind,GW/2-14,GH-30,12,9);
+    cx.fillText(windArrow,GW/2+18,GH-22);
   }
 
   // Level-up banner
@@ -1591,18 +1844,20 @@ function drawHUD(){
 
   // PAUSE indicator
   if(G.pauseTimer>0){
+    cx.drawImage(hudZzz,GW/2-34,GH/2-42,12,12);
     cx.textAlign='center';cx.font='10px "Press Start 2P"';cx.fillStyle='#ff4444';
     cx.shadowColor='#000';cx.shadowBlur=4;
-    cx.fillText('💤 '+Math.ceil(G.pauseTimer)+'...',GW/2,GH/2-30);
+    cx.fillText(Math.ceil(G.pauseTimer)+'...',GW/2+6,GH/2-30);
     cx.shadowBlur=0;
   }
   // Active powerup indicator
   if(G.activePower&&G.powerTimer>0){
-    const icons={magnet:'🧲',shield:'🛡️',slowmo:'⏳'};
+    const psp=POWERUP_SPRITES[G.activePower];
     const dur=POWERUP_DUR[G.activePower]+(G.activePower==='slowmo'?getUpLvl('slowDur')*2:0);
+    if(psp)cx.drawImage(psp,12,67,11,11);
     cx.textAlign='left';cx.font='8px "Press Start 2P"';
     cx.fillStyle='#ffdd44';cx.shadowColor='#000';cx.shadowBlur=3;
-    cx.fillText(icons[G.activePower]+' '+G.powerTimer.toFixed(1)+'s',12,75);
+    cx.fillText(G.powerTimer.toFixed(1)+'s',27,75);
     cx.shadowBlur=0;
     const pct=G.powerTimer/dur;
     cx.fillStyle='rgba(0,0,0,.4)';cx.fillRect(12,79,60,4);
@@ -1688,11 +1943,22 @@ function drawHUDPortrait(){
   // Source: top 45px of Denis (head area), draw scaled to 32x32
   cx.drawImage(sprite,12,0,56,45,px,py,32,26);
   cx.restore();
-  // Mood indicator under portrait
-  const mood=G.heroState==='angry'?'😠':G.heroState==='chewing'?'😋':
-    G.heroState==='catching'?'😄':G.sleeping?'😴':'😊';
-  cx.font='8px sans-serif';cx.textAlign='center';
-  cx.fillText(mood,px+16,py+32);
+  // Mood indicator под портретом — пиксельный рот (без эмодзи)
+  const mx=px+10,my=py+30;
+  cx.fillStyle=G.heroState==='angry'?'#ff5544':G.sleeping?'#88aabb':'#ffdd44';
+  if(G.heroState==='angry'){
+    // нахмуренный: ровная линия с опущенными краями
+    cx.fillRect(mx,my,12,2);cx.fillRect(mx-1,my-1,2,2);cx.fillRect(mx+11,my-1,2,2);
+  } else if(G.sleeping){
+    // спит: маленькая «o»
+    cx.fillRect(mx+4,my,4,3);
+  } else if(G.heroState==='chewing'){
+    // жуёт: открытый рот
+    cx.fillRect(mx+2,my-1,8,4);cx.fillStyle='#aa3322';cx.fillRect(mx+3,my,6,2);
+  } else {
+    // улыбка: дуга вверх
+    cx.fillRect(mx+2,my,8,2);cx.fillRect(mx,my-1,2,2);cx.fillRect(mx+10,my-1,2,2);
+  }
 }
 // ===== GAME STATE =====
 const COLS=[GW*.1,GW*.25,GW*.4,GW*.55,GW*.7,GW*.85]; // 6 lanes for more space
@@ -1722,11 +1988,11 @@ const G={state:'splash',score:0,highscore:parseInt(localStorage.getItem('gv_hi')
 // ===== COINS & SHOP =====
 let totalCoins=parseInt(localStorage.getItem('gv_coins')||'0');
 const UPGRADES={
-  extraLife:{name:'❤️ +0.5 Жизни',desc:'Старт с 3.5 жизней',cost:80,max:3,key:'up_life'},
-  widerCatch:{name:'🤲 Шире ловля',desc:'Хитбокс +8px',cost:60,max:3,key:'up_wide'},
-  powerFreq:{name:'⭐ Бонусы чаще',desc:'Бонусы падают чаще',cost:100,max:2,key:'up_pow'},
-  slowDur:{name:'⏳ Длиннее замедление',desc:'+2с к замедлению',cost:70,max:2,key:'up_slow'},
-  coinMult:{name:'🪙 Больше монет',desc:'Монеты ×1.5',cost:120,max:2,key:'up_coin'},
+  extraLife:{name:'+0.5 Жизни',icon:'shield',desc:'Старт с 3.5 жизней',cost:80,max:3,key:'up_life'},
+  widerCatch:{name:'Шире ловля',icon:'target',desc:'Хитбокс +8px',cost:60,max:3,key:'up_wide'},
+  powerFreq:{name:'Бонусы чаще',icon:'star',desc:'Бонусы падают чаще',cost:100,max:2,key:'up_pow'},
+  slowDur:{name:'Длиннее замедление',icon:'zzz',desc:'+2с к замедлению',cost:70,max:2,key:'up_slow'},
+  coinMult:{name:'Больше монет',icon:'coin',desc:'Монеты ×1.5',cost:120,max:2,key:'up_coin'},
 };
 function getUpgrade(key){return parseInt(localStorage.getItem(key)||'0')}
 function setUpgrade(key,val){localStorage.setItem(key,val+'')}
@@ -1734,16 +2000,16 @@ function getUpLvl(id){return getUpgrade(UPGRADES[id].key)}
 
 // ===== THEMED LEVELS =====
 const LEVEL_THEMES=[
-  {name:'☀️ Утро',desc:'Завтрак на поляне',goodBoost:['butter','cig','shot'],badRate:.15},
-  {name:'🍖 Шашлыки',desc:'Обед у костра',goodBoost:['shash','borsch','luksalo'],badRate:.18},
-  {name:'🥃 Застолье',desc:'Рюмка за рюмкой',goodBoost:['shot','shot','can'],badRate:.2},
-  {name:'🌪 Ветреный',desc:'Ветер усиливается!',goodBoost:null,badRate:.2,windy:true},
-  {name:'💀 МИНИ-БОСС',desc:'Огромная канистра!',goodBoost:null,badRate:.1,boss:true},
-  {name:'🌙 Вечер',desc:'Шаверма на закате',goodBoost:['shaverma','shash','borsch'],badRate:.18},
-  {name:'🔥 Жаркий',desc:'Всё быстрее!',goodBoost:null,badRate:.22,fast:true},
-  {name:'🎯 Хитрый',desc:'Обманки и финты',goodBoost:null,badRate:.2,tricky:true},
-  {name:'🌊 Штормовой',desc:'Ветер и хаос!',goodBoost:null,badRate:.22,windy:true,tricky:true},
-  {name:'💀 МЕГА-БОСС',desc:'Двойная канистра!',goodBoost:null,badRate:.08,boss:true,megaBoss:true},
+  {name:'УТРО',desc:'Завтрак на поляне',goodBoost:['butter','cig','shot'],badRate:.15},
+  {name:'ШАШЛЫКИ',desc:'Обед у костра',goodBoost:['shash','borsch','luksalo'],badRate:.18},
+  {name:'ЗАСТОЛЬЕ',desc:'Рюмка за рюмкой',goodBoost:['shot','shot','can'],badRate:.2},
+  {name:'ВЕТРЕНЫЙ',desc:'Ветер усиливается!',goodBoost:null,badRate:.2,windy:true},
+  {name:'МИНИ-БОСС',desc:'Огромная канистра!',goodBoost:null,badRate:.1,boss:true},
+  {name:'ВЕЧЕР',desc:'Шаверма на закате',goodBoost:['shaverma','shash','borsch'],badRate:.18},
+  {name:'ЖАРКИЙ',desc:'Всё быстрее!',goodBoost:null,badRate:.22,fast:true},
+  {name:'ХИТРЫЙ',desc:'Обманки и финты',goodBoost:null,badRate:.2,tricky:true},
+  {name:'ШТОРМОВОЙ',desc:'Ветер и хаос!',goodBoost:null,badRate:.22,windy:true,tricky:true},
+  {name:'МЕГА-БОСС',desc:'Двойная канистра!',goodBoost:null,badRate:.08,boss:true,megaBoss:true},
 ];
 function getTheme(lvl){return LEVEL_THEMES[(lvl-1)%LEVEL_THEMES.length]}
 
@@ -1820,7 +2086,7 @@ function drawBoss(){
     cx.textAlign='center';cx.font='12px "Press Start 2P"';
     cx.fillStyle='#ff4444';cx.shadowColor='#ff0000';cx.shadowBlur=10;
     const a=.5+.5*Math.sin(Date.now()*.01);cx.globalAlpha=a;
-    cx.fillText('⚠ БОСС ИДЁТ! ⚠',GW/2,GH/2-20);
+    cx.fillText('!!! БОСС ИДЁТ !!!',GW/2,GH/2-20);
     cx.font='8px "Press Start 2P"';cx.fillStyle='#ffdd44';
     cx.fillText('Набирай комбо чтобы его прогнать!',GW/2,GH/2+5);
     cx.globalAlpha=1;cx.shadowBlur=0;return;
@@ -1933,7 +2199,7 @@ function showScorePop(px,py,pts){
 }
 function showComboPop(c){
   const el=document.createElement('div');el.className='cp';
-  el.textContent=c>=10?'🔥x'+c+'!':'⚡x'+c+' COMBO!';
+  el.innerHTML=c>=10?iconImg('fire',20)+' x'+c+'!':iconImg('bolt',20)+' x'+c+' COMBO!';
   document.body.appendChild(el);setTimeout(()=>el.remove(),900);
 }
 
@@ -2000,7 +2266,7 @@ function update(dt){
       if(p.type==='slowmo'){G.slowActive=true;achStats.slowsUsed=(achStats.slowsUsed||0)+1}
       addP(p.x,p.y,POWERUP_GLOW[p.type],15,6,true);
       sfxCombo();haptic('light');
-      showScorePop(p.x,p.y,'⭐');
+      showScorePop(p.x,p.y,'БОНУС');
       G.powerups.splice(i,1);
       G.dogMood='wag';G.dogMoodTimer=2;
       checkAchievements();
@@ -2072,7 +2338,7 @@ function update(dt){
         if(G.shieldActive){
           // Shield blocks bad items!
           addP(v.x,v.y,'#44aaff',12,5,true);
-          showScorePop(v.x,v.y,'🛡️');
+          showScorePop(v.x,v.y,'БЛОК');
           sfxCatch();
         } else {
           G.score=Math.max(0,G.score+pts);
@@ -2175,31 +2441,31 @@ function gameOver(){
 }
 
 const GAMEOVER_PHRASES=[
-  '😴 уснул',
-  '😴 спит под ёлкой',
-  '😴 спит пьяный',
-  '😤 негодует',
-  '😒 думает о тебе с презрением',
-  '😴 храпит на весь лес',
-  '🍺 перебрал...',
-  '😵 не рассчитал силы',
-  '💤 видит десятый сон',
-  '😤 разочарован',
-  '😴 дрыхнет в палатке',
-  '🌲 обнимает берёзу',
-  '😒 не одобряет',
-  '😴 уснул у костра',
-  '🐻 разбудил медведя',
-  '💤 ушёл в астрал',
-  '😴 набурагозился',
-  '🥴 потерял ориентацию',
-  '😤 топнул ногой',
-  '😴 прикорнул ненадолго',
-  '🪵 спит как бревно',
-  '😒 хмурится',
-  '💤 досматривает сон',
-  '😵‍💫 утомлён природой',
-  '😴 считает овец',
+  'уснул',
+  'спит под ёлкой',
+  'спит пьяный',
+  'негодует',
+  'думает о тебе с презрением',
+  'храпит на весь лес',
+  'перебрал...',
+  'не рассчитал силы',
+  'видит десятый сон',
+  'разочарован',
+  'дрыхнет в палатке',
+  'обнимает берёзу',
+  'не одобряет',
+  'уснул у костра',
+  'разбудил медведя',
+  'ушёл в астрал',
+  'набурагозился',
+  'потерял ориентацию',
+  'топнул ногой',
+  'прикорнул ненадолго',
+  'спит как бревно',
+  'хмурится',
+  'досматривает сон',
+  'утомлён природой',
+  'считает овец',
 ];
 
 function showGameOverUI(){
@@ -2208,7 +2474,7 @@ function showGameOverUI(){
   document.getElementById('goPhrase').textContent=phrase;
   document.getElementById('fs').textContent=G.score;
   document.getElementById('fh').textContent=G.highscore;
-  document.getElementById('fcoins').textContent='🪙 +'+G.sessionCoins+' (всего: '+totalCoins+')';
+  document.getElementById('fcoins').innerHTML=iconImg('coin',12)+' +'+G.sessionCoins+' (всего: '+totalCoins+')';
   document.getElementById('go').classList.add('active');
   document.getElementById('overlay').classList.remove('hidden');
 }
@@ -2492,9 +2758,9 @@ function drawCutscene(){
   } else if(t<4.5){
     cx.fillText('Тигр: "А это что такое?"',GW/2,GH*.88);
   } else if(t<5.5){
-    cx.fillText('😱 !!!',GW/2,GH*.88);
+    cx.fillText('!!!',GW/2,GH*.88);
   } else {
-    cx.fillText('Тигр сбежал! 🐅💨',GW/2,GH*.88);
+    cx.fillText('Тигр сбежал!',GW/2,GH*.88);
   }
   cx.shadowBlur=0;
   // Skip hint
@@ -2699,7 +2965,7 @@ function saveLB(s,dur){const u=tgUser();let lb=getLB();lb.push({n:u?.name||'Иг
 function renderLBList(list){
   const el=document.getElementById('lbl');el.innerHTML='';
   if(!list||!list.length){el.innerHTML='<div style="color:#aaa;font-size:8px;padding:20px">Пока пусто!</div>';return}
-  list.forEach((e,i)=>{const m=['🥇','🥈','🥉'];const d=document.createElement('div');d.className='le';d.innerHTML=`<span class="lr">${m[i]||(i+1)+'.'}</span><span class="ln">${e.n}</span><span class="ls">${e.s}</span>`;el.appendChild(d)});
+  list.forEach((e,i)=>{const m=[iconImg('med1',16),iconImg('med2',16),iconImg('med3',16)];const d=document.createElement('div');d.className='le';d.innerHTML=`<span class="lr">${m[i]||(i+1)+'.'}</span><span class="ln">${e.n}</span><span class="ls">${e.s}</span>`;el.appendChild(d)});
 }
 let lbPeriod='week';
 function refreshLB(){
@@ -3391,9 +3657,10 @@ function drawIntro(){
       const kp=(pt-.3)*2;
       const kx=tentX+60+25+kp*50;
       const ky=GROUND_Y-DH*.65-kp*35-Math.sin(kp*6)*10;
-      cx.font=(14+kp*12)+'px sans-serif';cx.textAlign='center';
       cx.globalAlpha=Math.max(0,1-kp*.4);
-      cx.fillText('😘',kx,ky);cx.globalAlpha=1;
+      const ks=14+kp*16;
+      cx.drawImage(sprHeart,kx-ks/2,ky-ks/2,ks,ks*sprHeart.height/sprHeart.width);
+      cx.globalAlpha=1;
     }
     // Title
     cx.textAlign='center';cx.font='14px "Press Start 2P"';cx.fillStyle='#ffdd44';
@@ -3435,10 +3702,10 @@ function startGame(){
   sfxStart();
 }
 
-document.getElementById('btnPlay').onclick=()=>{ensA();startIntro()};
+document.getElementById('btnPlay').onclick=()=>{ensA();markOnboarded();startIntro()};
 document.getElementById('btnRe').onclick=()=>{ensA();startGame()};
 document.getElementById('btnSh').onclick=()=>{
-  const t=`🥃 Я наловил ${G.score} рюмок в Gviskar!\nДенис Михалыч гордится!\nСыграй: `;
+  const t=`Я наловил ${G.score} рюмок в Gviskar!\nДенис Михалыч гордится!\nСыграй: `;
   if(TG)try{TG.switchInlineQuery(t,['users','groups','channels'])}catch(e){try{navigator.share({text:t})}catch(e2){navigator.clipboard?.writeText(t);tgAlert('Скопировано!')}}
   else try{navigator.share({text:t})}catch(e){navigator.clipboard?.writeText(t);tgAlert('Скопировано!')}
 };
@@ -3462,7 +3729,7 @@ function showAchPanel(){
     const unlocked=achUnlocked.includes(a.id);
     const d=document.createElement('div');
     d.style.cssText=`display:flex;gap:8px;align-items:center;font-size:7px;color:${unlocked?'#eee':'#666'};padding:5px 12px;background:rgba(${unlocked?'255,255,255,.08':'0,0,0,.2'});border:1px solid ${unlocked?'#ffdd44':'#333'};width:270px;max-width:90vw;margin:2px 0`;
-    d.innerHTML=`<span style="font-size:14px;min-width:22px">${unlocked?a.icon:'🔒'}</span><span style="flex:1;text-align:left">${a.name}<br><span style="font-size:5px;color:#999">${a.desc}</span></span>${unlocked?'<span style="color:#ffdd44">✓</span>':''}`;
+    d.innerHTML=`<span style="min-width:22px;display:inline-flex;justify-content:center">${unlocked?iconImg(achIconName(a),16):iconImg('lock',14)}</span><span style="flex:1;text-align:left">${a.name}<br><span style="font-size:5px;color:#999">${a.desc}</span></span>${unlocked?'<span style="color:#ffdd44">✓</span>':''}`;
     el.appendChild(d);
   });
   document.getElementById('splash').style.display='none';
@@ -3480,7 +3747,7 @@ document.getElementById('btnAchBk').onclick=()=>{
 
 // ===== SHOP =====
 function showShop(){
-  document.getElementById('shopCoins').textContent='🪙 '+totalCoins;
+  document.getElementById('shopCoins').innerHTML=iconImg('coin',14)+' '+totalCoins;
   const el=document.getElementById('shopList');el.innerHTML='';
   Object.entries(UPGRADES).forEach(([id,up])=>{
     const lvl=getUpLvl(id);
@@ -3489,7 +3756,7 @@ function showShop(){
     const d=document.createElement('div');
     d.style.cssText=`display:flex;gap:8px;align-items:center;font-size:7px;color:#eee;padding:8px 12px;background:rgba(${canBuy?'255,170,0,.12':'0,0,0,.2'});border:1px solid ${maxed?'#44dd44':canBuy?'#ffaa22':'#444'};width:280px;max-width:92vw;margin:3px 0;cursor:${canBuy?'pointer':'default'}`;
     const lvlBar='■'.repeat(lvl)+'□'.repeat(up.max-lvl);
-    d.innerHTML=`<span style="font-size:14px;min-width:22px">${up.name.slice(0,2)}</span><span style="flex:1;text-align:left">${up.name.slice(2)}<br><span style="font-size:5px;color:#aaa">${up.desc}</span><br><span style="font-size:6px;color:#ffaa22">${lvlBar}</span></span><span style="color:${maxed?'#44dd44':'#ffaa22'};font-size:7px">${maxed?'MAX':'🪙'+up.cost}</span>`;
+    d.innerHTML=`<span style="min-width:22px;display:inline-flex;justify-content:center">${iconImg(up.icon,16)}</span><span style="flex:1;text-align:left">${up.name}<br><span style="font-size:5px;color:#aaa">${up.desc}</span><br><span style="font-size:6px;color:#ffaa22">${lvlBar}</span></span><span style="color:${maxed?'#44dd44':'#ffaa22'};font-size:7px;display:inline-flex;align-items:center;gap:3px">${maxed?'MAX':iconImg('coin',12)+up.cost}</span>`;
     if(canBuy)d.onclick=()=>{
       totalCoins-=up.cost;localStorage.setItem('gv_coins',totalCoins);
       setUpgrade(up.key,lvl+1);
@@ -3520,7 +3787,7 @@ let botUsername='';
 let refInvites=0;
 function updateInviteBtn(){
   const b=document.getElementById('btnInvite');
-  if(b)b.textContent=refInvites>0?('🤝 ПОЗВАТЬ ДРУГА ('+refInvites+')'):'🤝 ПОЗВАТЬ ДРУГА';
+  if(b)b.innerHTML=iconImg('friend',14)+' ПОЗВАТЬ ДРУГА'+(refInvites>0?(' ('+refInvites+')'):'');
 }
 async function doInvite(){
   const uid=tgUser()?.id;
@@ -3568,7 +3835,7 @@ function runDailyStreak(){
   const bonus=Math.min(s.streak,7)*15; // день 1 = 15 ... день 7+ = 105
   totalCoins+=bonus;localStorage.setItem('gv_coins',totalCoins);
   localStorage.setItem('gv_streak',JSON.stringify(s));
-  setTimeout(()=>showAchPopup({icon:'🔥',name:'День '+s.streak+' подряд',desc:'+'+bonus+' монет за вход'}),600);
+  setTimeout(()=>showAchPopup({icon:'fire',name:'День '+s.streak+' подряд',desc:'+'+bonus+' монет за вход'}),600);
 }
 
 // ===== CLOUD SYNC (Telegram CloudStorage) =====

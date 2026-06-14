@@ -4,16 +4,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87CEEB;font-family:
 #overlay{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;background:rgba(40,80,40,.82)}
 #overlay.hidden{display:none}
 #splash{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;text-align:center}
-#splash h1{font-size:clamp(22px,6vw,40px);color:#fff;text-shadow:0 0 20px #00aa44,0 3px 0 #225500;letter-spacing:3px}
-#splash h2{font-size:clamp(9px,2.8vw,15px);color:#ffdd44;text-shadow:0 2px 0 #886600}
-.si{font-size:40px;margin:6px 0}
-#splash .sub{font-size:clamp(7px,1.8vw,9px);color:#dde;margin-top:6px;line-height:2.2}
+#splash h1{font-size:clamp(22px,6vw,40px);color:#fff;text-shadow:0 0 20px #00aa44,0 3px 0 #225500}
+#splash h2{font-size:clamp(13px,4vw,22px);color:#ffdd44;text-shadow:0 2px 0 #886600}
+.si{margin:6px 0;display:flex;justify-content:center}
+.si img{image-rendering:pixelated}
+#splash .sub{font-size:clamp(8px,2.2vw,10px);color:#dde;margin-top:6px;line-height:1.8}
+.copyright{font-size:clamp(6px,1.4vw,8px);color:#9aa;margin-top:16px;letter-spacing:1px}
+.pxi{image-rendering:pixelated;vertical-align:middle;display:inline-block}
 .btn{font-family:'Press Start 2P',monospace;font-size:clamp(10px,2.5vw,14px);padding:14px 32px;border:3px solid;cursor:pointer;transition:all .15s;text-transform:uppercase;outline:none}
+.btn img{image-rendering:pixelated;vertical-align:middle}
 .btn:active{transform:scale(.95)}
 .bp{background:#ffdd44;color:#333;border-color:#ccaa00;margin-top:14px;animation:pu 1.5s ease-in-out infinite}
 @keyframes pu{0%,100%{box-shadow:0 0 0 0 #ffdd4466}50%{box-shadow:0 0 0 14px #ffdd4400}}
 .br_{background:#ff6b6b;color:#fff;border-color:#cc4444}
-.bsh{background:#3390ec;color:#fff;border-color:#2277cc}
+.bsh{background:#33aa44;color:#fff;border-color:#1f7a2c}
 .sm{font-size:clamp(7px,1.8vw,10px);padding:10px 20px}
 .dk{background:rgba(0,0,0,.4);color:#ffdd44;border-color:#555}
 #go{display:none;flex-direction:column;align-items:center;gap:8px;padding:20px;text-align:center}
@@ -24,7 +28,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87CEEB;font-family:
 #go .st{font-size:clamp(7px,1.8vw,10px);color:#ccc;margin:2px 0 10px}
 .rw{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 #sb{position:fixed;top:8px;right:8px;z-index:20;display:flex;gap:6px}
-#sb button{background:rgba(0,0,0,.5);border:2px solid #555;color:#fff;font-size:16px;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:4px;outline:none}
+#sb button{background:rgba(0,0,0,.5);border:2px solid #555;color:#fff;font-size:16px;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;outline:none;padding:0}
+#sb button img{image-rendering:pixelated}
 #sb button.on{color:#ffdd44;border-color:#ffdd44}
 #lb{display:none;flex-direction:column;align-items:center;gap:8px;padding:20px;text-align:center}
 #lb.active{display:flex}
@@ -38,3 +43,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87CEEB;font-family:
 @keyframes cfa{0%{opacity:1;transform:translateX(-50%) scale(1.6)}100%{opacity:0;transform:translateX(-50%) translateY(-60px) scale(.7)}}
 .sf{position:fixed;pointer-events:none;z-index:15;font-family:'Press Start 2P',monospace;font-size:clamp(11px,3vw,16px);color:#22aa22;text-shadow:0 0 10px #22aa22;animation:sfl .6s ease-out forwards}
 @keyframes sfl{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-40px)}}
+/* splash menu layout */
+.menu-row{display:flex;gap:10px;justify-content:center;margin-top:12px}
+.btn.ico{padding:10px;width:64px;height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.btn.ico img{image-rendering:pixelated}
+.btn.ico .lbl{font-size:6px;line-height:1.2}
+.btn.inv{margin-top:12px;display:inline-flex;align-items:center;gap:8px}
+/* section header with pixel icon */
+.shead{display:flex;align-items:center;justify-content:center;gap:8px}
+.shead img{image-rendering:pixelated}
